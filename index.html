@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Restaurante</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1d23; --panel:#23272f; --panel2:#2b303a; --line:#363c47;
+    --txt:#e6e9ef; --muted:#9aa3b2; --accent:#e07b39; --accent2:#3a9d6e;
+    --danger:#c0455a; --chip:#323845;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+  header{background:linear-gradient(135deg,#2b303a,#23272f);padding:18px 20px;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.4rem;letter-spacing:.5px}
+  header h1 span{color:var(--accent)}
+  nav{display:flex;gap:6px;background:var(--panel);padding:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:19}
+  nav button{flex:1;min-width:120px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);padding:10px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:.15s}
+  nav button:hover{color:var(--txt)}
+  nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  main{max-width:1000px;margin:0 auto;padding:20px}
+  .tab{display:none}
+  .tab.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+  h2{font-size:1.1rem;margin-bottom:14px;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:8px}
+  h3{font-size:.95rem;margin:14px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:8px;font-size:.95rem;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:140px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.green{background:var(--accent2)}
+  .btn.gray{background:var(--chip);color:var(--txt)}
+  .btn.danger{background:var(--danger)}
+  .btn.sm{padding:5px 10px;font-size:.8rem}
+  .mt{margin-top:14px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);font-size:.9rem}
+  th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+  td.price{text-align:right;font-weight:700;color:var(--accent);white-space:nowrap}
+  .pill{display:inline-block;background:var(--chip);padding:2px 9px;border-radius:20px;font-size:.74rem;color:var(--muted)}
+  .empty{color:var(--muted);text-align:center;padding:20px;font-style:italic}
+  .secblock{margin-bottom:18px}
+  .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.menu-grid{grid-template-columns:1fr}}
+  .menu-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .menu-box h4{color:var(--accent);margin-bottom:10px;font-size:1rem}
+  .total-box{background:linear-gradient(135deg,#2b303a,#23272f);border:2px solid var(--accent);border-radius:10px;padding:16px;text-align:center;margin-top:12px}
+  .total-box .num{font-size:2rem;font-weight:800;color:var(--accent)}
+  .multi{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .multi label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
+  .multi input{width:auto}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;opacity:0;transition:.3s;z-index:50;pointer-events:none}
+  .toast.show{opacity:1}
+  .preview{background:#fff;color:#222;border-radius:10px;padding:24px;margin-top:14px}
+  .preview h3{color:var(--accent);border-bottom:2px solid var(--accent);text-align:center}
+  .preview .ml{margin:10px 0}
+  .preview .ml b{color:#444}
+  .preview .pr{text-align:center;font-size:1.6rem;font-weight:800;color:var(--accent);margin-top:14px}
+  @media print{header,nav,.noprint{display:none!important}body{background:#fff}main{max-width:none}}
+</style>
+</head>
+<body>
+<header><h1>🍽️ Gestión de <span>Restaurante</span></h1></header>
+<nav>
+  <button class="active" data-tab="db">Base de datos</button>
+  <button data-tab="menus">Menús</button>
+  <button data-tab="carta">Carta / Precios</button>
+</nav>
+<main>
+
+<!-- ====== BASE DE DATOS ====== -->
+<div class="tab active" id="db">
+  <div class="card">
+    <h2>Datos del restaurante</h2>
+    <div class="row">
+      <div style="flex:2"><label>Nombre del restaurante</label><input id="rName" placeholder="Ej: Casa Valentín" oninput="saveRest()"></div>
+      <div><label>Teléfono</label><input id="rPhone" placeholder="93 000 00 00" oninput="saveRest()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Añadir plato / bebida</h2>
+    <div class="row">
+      <div style="flex:2"><label>Nombre</label><input id="pName" placeholder="Ej: Ensalada mixta"></div>
+      <div><label>Sección</label>
+        <select id="pSec">
+          <option value="primeros">Primeros</option>
+          <option value="segundos">Segundos</option>
+          <option value="postres">Postres</option>
+          <option value="bebidas">Bebidas</option>
+          <option value="entrantes">Entrantes</option>
+          <option value="otros">Otros</option>
+        </select>
+      </div>
+      <div><label>Precio (€)</label><input id="pPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="row mt"><div style="flex:2"><label>Descripción (opcional)</label><input id="pDesc" placeholder="Ingredientes, alérgenos..."></div></div>
+    <div class="mt"><button class="btn green" onclick="addDish()">+ Añadir a la base de datos</button></div>
+  </div>
+  <div class="card" id="dbList"></div>
+  <div class="card">
+    <h2>💾 Copia de seguridad</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">Guarda regularmente una copia. El archivo contiene toda la base de datos, los menús y los datos del restaurante. Puedes restaurarlo en este u otro dispositivo.</p>
+    <div class="row noprint">
+      <button class="btn green sm" onclick="exportData()">⬇️ Descargar copia de seguridad</button>
+      <button class="btn gray sm" onclick="document.getElementById('importFile').click()">⬆️ Restaurar copia</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ====== MENÚS ====== -->
+<div class="tab" id="menus">
+  <div class="card noprint">
+    <h2>Configurar menú</h2>
+    <div class="row">
+      <div><label>Tipo de menú</label>
+        <select id="mType" onchange="loadMenu()">
+          <option value="semana">Menú entre semana (L-V)</option>
+          <option value="finde">Menú de fin de semana</option>
+        </select>
+      </div>
+      <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="menu-grid mt">
+      <div class="menu-box"><h4>Primeros a elegir</h4><div class="multi" id="selPrimeros"></div></div>
+      <div class="menu-box"><h4>Segundos a elegir</h4><div class="multi" id="selSegundos"></div></div>
+      <div class="menu-box"><h4>Postres a elegir</h4><div class="multi" id="selPostres"></div></div>
+      <div class="menu-box"><h4>Bebidas incluidas</h4><div class="multi" id="selBebidas"></div></div>
+    </div>
+    <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button></div>
+  </div>
+  <div class="card">
+    <h2>Vista previa del menú</h2>
+    <div class="row noprint" style="margin-bottom:14px">
+      <button class="btn green sm" onclick="menuPDF()">📄 Descargar PDF</button>
+      <button class="btn sm" style="background:#25d366" onclick="sendWhatsApp()">💬 WhatsApp</button>
+      <button class="btn sm" style="background:#4a6fa5" onclick="sendEmail()">✉️ Email</button>
+      <button class="btn gray sm" onclick="copyMenu()">📋 Copiar texto</button>
+      <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+    <div id="menuPreview"></div>
+  </div>
+</div>
+
+<!-- ====== CARTA ====== -->
+<div class="tab" id="carta">
+  <div class="card">
+    <h2>Carta completa <button class="btn gray sm noprint" style="float:right" onclick="window.print()">🖨️ Imprimir</button></h2>
+    <div id="cartaList"></div>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const SECS={entrantes:"Entrantes",primeros:"Primeros",segundos:"Segundos",postres:"Postres",bebidas:"Bebidas",otros:"Otros"};
+let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
+let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
+let rest=JSON.parse(localStorage.getItem('rest_info')||'{"name":"","phone":""}');
+
+function save(){localStorage.setItem('rest_dishes',JSON.stringify(dishes));localStorage.setItem('rest_menus',JSON.stringify(menus));}
+function saveRest(){rest={name:document.getElementById('rName').value,phone:document.getElementById('rPhone').value};localStorage.setItem('rest_info',JSON.stringify(rest));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function eur(n){return Number(n||0).toFixed(2)+' €';}
+
+// Navegación
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');
+  if(b.dataset.tab==='menus')loadMenu();
+  if(b.dataset.tab==='carta')renderCarta();
+});
+
+// --- Base de datos ---
+function addDish(){
+  const name=document.getElementById('pName').value.trim();
+  const sec=document.getElementById('pSec').value;
+  const price=parseFloat(document.getElementById('pPrice').value);
+  const desc=document.getElementById('pDesc').value.trim();
+  if(!name){toast('Pon un nombre');return;}
+  if(isNaN(price)){toast('Pon un precio');return;}
+  dishes.push({id:Date.now(),name,sec,price,desc});
+  save();renderDB();
+  document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
+  document.getElementById('pName').focus();
+  toast('Añadido ✔');
+}
+function delDish(id){if(!confirm('¿Eliminar este plato?'))return;dishes=dishes.filter(d=>d.id!==id);save();renderDB();}
+function renderDB(){
+  const c=document.getElementById('dbList');
+  if(!dishes.length){c.innerHTML='<h2>Platos guardados</h2><div class="empty">Aún no hay platos. Añade el primero arriba.</div>';return;}
+  let html='<h2>Platos guardados ('+dishes.length+')</h2>';
+  Object.keys(SECS).forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s);
+    if(!items.length)return;
+    html+='<div class="secblock"><h3>'+SECS[s]+'</h3><table><tbody>';
+    items.forEach(d=>{
+      html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right"><button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
+    });
+    html+='</tbody></table></div>';
+  });
+  c.innerHTML=html;
+}
+
+// --- Menús ---
+function fillMulti(boxId,sec,selected){
+  const items=dishes.filter(d=>d.sec===sec);
+  const box=document.getElementById(boxId);
+  if(!items.length){box.innerHTML='<span class="empty" style="padding:6px">Sin platos en esta sección</span>';return;}
+  box.innerHTML=items.map(d=>'<label><input type="checkbox" value="'+d.id+'" '+(selected.includes(d.id)?'checked':'')+'> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
+}
+function loadMenu(){
+  const t=document.getElementById('mType').value;
+  const m=menus[t]||{price:'',primeros:[],segundos:[],postres:[],bebidas:[]};
+  document.getElementById('mPrice').value=m.price;
+  fillMulti('selPrimeros','primeros',m.primeros);
+  fillMulti('selSegundos','segundos',m.segundos);
+  fillMulti('selPostres','postres',m.postres);
+  fillMulti('selBebidas','bebidas',m.bebidas);
+  renderMenuPreview();
+}
+function getChecked(boxId){return [...document.querySelectorAll('#'+boxId+' input:checked')].map(i=>parseInt(i.value));}
+function saveMenu(){
+  const t=document.getElementById('mType').value;
+  menus[t]={
+    price:parseFloat(document.getElementById('mPrice').value)||0,
+    primeros:getChecked('selPrimeros'),segundos:getChecked('selSegundos'),
+    postres:getChecked('selPostres'),bebidas:getChecked('selBebidas')
+  };
+  save();renderMenuPreview();toast('Menú guardado ✔');
+}
+function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
+function renderMenuPreview(){
+  const t=document.getElementById('mType').value;
+  const tit=t==='semana'?'Menú del Día (Lunes a Viernes)':'Menú de Fin de Semana';
+  const m=menus[t];
+  const c=document.getElementById('menuPreview');
+  if(!m){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
+  const sec=(arr,t)=>arr&&arr.length?'<div class="ml"><b>'+t+':</b><br>'+arr.map(nameOf).join(' · ')+'</div>':'';
+  c.innerHTML='<div class="preview"><h3>'+tit+'</h3>'+
+    sec(m.primeros,'Primeros a elegir')+sec(m.segundos,'Segundos a elegir')+
+    sec(m.postres,'Postres')+sec(m.bebidas,'Bebida incluida')+
+    '<div class="pr">'+eur(m.price)+'</div></div>';
+}
+
+// --- Carta ---
+function renderCarta(){
+  const c=document.getElementById('cartaList');
+  if(!dishes.length){c.innerHTML='<div class="empty">No hay platos.</div>';return;}
+  let html='<div class="preview">';
+  Object.keys(SECS).forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s);
+    if(!items.length)return;
+    html+='<h3>'+SECS[s]+'</h3>';
+    items.forEach(d=>{html+='<div class="ml" style="display:flex;justify-content:space-between"><span><b>'+d.name+'</b>'+(d.desc?' — <i style="color:#666;font-size:.85em">'+d.desc+'</i>':'')+'</span><span style="color:var(--accent);font-weight:700;white-space:nowrap">'+eur(d.price)+'</span></div>';});
+  });
+  html+='</div>';
+  c.innerHTML=html;
+}
+
+// --- Texto / PDF / Envío del menú ---
+function currentMenu(){
+  const t=document.getElementById('mType').value;
+  return {t,m:menus[t],tit:t==='semana'?'Menú del Día (Lunes a Viernes)':'Menú de Fin de Semana'};
+}
+function menuText(){
+  const {m,tit}=currentMenu();
+  if(!m){return '';}
+  let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n\n';
+  const sec=(arr,t)=>arr&&arr.length?t+':\n  '+arr.map(nameOf).join('\n  ')+'\n\n':'';
+  txt+=sec(m.primeros,'PRIMEROS A ELEGIR');
+  txt+=sec(m.segundos,'SEGUNDOS A ELEGIR');
+  txt+=sec(m.postres,'POSTRES');
+  txt+=sec(m.bebidas,'BEBIDA INCLUIDA');
+  txt+='PRECIO: '+eur(m.price);
+  if(rest.phone)txt+='\n\nReservas: '+rest.phone;
+  return txt;
+}
+function copyMenu(){
+  const {m}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  navigator.clipboard.writeText(menuText()).then(()=>toast('Texto copiado ✔'));
+}
+function sendWhatsApp(){
+  const {m}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(menuText()),'_blank');
+}
+function sendEmail(){
+  const {m,tit}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  window.location.href='mailto:?subject='+encodeURIComponent((rest.name?rest.name+' - ':'')+tit)+'&body='+encodeURIComponent(menuText());
+}
+function menuPDF(){
+  const {m,tit}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=22;
+  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
+  if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text(rest.name,105,y,{align:'center'});y+=9;}
+  doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text(tit,105,y,{align:'center'});y+=4;
+  doc.setDrawColor(224,123,57);doc.line(60,y,150,y);y+=12;
+  doc.setTextColor(40,40,40);
+  const block=(arr,t)=>{
+    if(!arr||!arr.length)return;
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(t,20,y);y+=7;
+    doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
+    arr.forEach(id=>{doc.text('•  '+nameOf(id),26,y);y+=6;});y+=4;
+  };
+  block(m.primeros,'PRIMEROS A ELEGIR');
+  block(m.segundos,'SEGUNDOS A ELEGIR');
+  block(m.postres,'POSTRES');
+  block(m.bebidas,'BEBIDA INCLUIDA');
+  y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
+  doc.text('PRECIO: '+eur(m.price),105,y,{align:'center'});y+=10;
+  if(rest.phone){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});}
+  doc.save('menu-'+document.getElementById('mType').value+'.pdf');
+  toast('PDF generado ✔');
+}
+
+// --- Copia de seguridad ---
+function exportData(){
+  const data={dishes,menus,rest,fecha:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  a.href=url;
+  a.download='restaurante-copia-'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'.json';
+  a.click();URL.revokeObjectURL(url);
+  toast('Copia descargada ✔');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.dishes&&!data.menus){toast('Archivo no válido');return;}
+      if(!confirm('Esto reemplazará todos los datos actuales por los de la copia. ¿Continuar?'))return;
+      dishes=data.dishes||[];menus=data.menus||{};rest=data.rest||{name:'',phone:''};
+      save();localStorage.setItem('rest_info',JSON.stringify(rest));
+      document.getElementById('rName').value=rest.name||'';
+      document.getElementById('rPhone').value=rest.phone||'';
+      renderDB();
+      toast('Copia restaurada ✔');
+    }catch(err){toast('Error al leer el archivo');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// Cargar datos del restaurante
+document.getElementById('rName').value=rest.name;
+document.getElementById('rPhone').value=rest.phone;
+renderDB();
+</script>
+</body>
+</html>
