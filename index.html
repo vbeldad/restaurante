@@ -88,18 +88,24 @@
       <div style="flex:2"><label>Nombre</label><input id="pName" placeholder="Ej: Ensalada mixta"></div>
       <div><label>Sección</label>
         <select id="pSec">
+          <option value="entrantes">Entrantes</option>
           <option value="primeros">Primeros</option>
           <option value="segundos">Segundos</option>
           <option value="postres">Postres</option>
+          <option value="tapas">Tapas</option>
+          <option value="bocadillos_calientes">Bocadillos calientes</option>
+          <option value="bocadillos_frios">Bocadillos fríos</option>
+          <option value="bocadillos_especiales">Bocadillos especiales</option>
+          <option value="vegetales">Vegetales</option>
+          <option value="hamburguesas">Hamburguesas</option>
           <option value="bebidas">Bebidas</option>
-          <option value="entrantes">Entrantes</option>
-          <option value="otros">Otros</option>
         </select>
       </div>
       <div><label>Precio (€)</label><input id="pPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
     </div>
     <div class="row mt"><div style="flex:2"><label>Descripción (opcional)</label><input id="pDesc" placeholder="Ingredientes, alérgenos..."></div></div>
-    <div class="mt"><button class="btn green" onclick="addDish()">+ Añadir a la base de datos</button></div>
+    <div class="mt"><button class="btn green" id="btnDish" onclick="addDish()">+ Añadir a la base de datos</button>
+    <button class="btn gray" id="btnCancelDish" onclick="cancelEditDish()" style="display:none">Cancelar</button></div>
   </div>
   <div class="card" id="dbList"></div>
   <div class="card">
@@ -132,7 +138,8 @@
       <div class="menu-box"><h4>Postres a elegir</h4><div class="multi" id="selPostres"></div></div>
       <div class="menu-box"><h4>Bebidas incluidas</h4><div class="multi" id="selBebidas"></div></div>
     </div>
-    <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button></div>
+    <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
+    <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
   </div>
   <div class="card">
     <h2>Vista previa del menú</h2>
@@ -159,7 +166,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SECS={entrantes:"Entrantes",primeros:"Primeros",segundos:"Segundos",postres:"Postres",bebidas:"Bebidas",otros:"Otros"};
+const SECS={entrantes:"Entrantes",primeros:"Primeros",segundos:"Segundos",postres:"Postres",tapas:"Tapas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bebidas:"Bebidas"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 let rest=JSON.parse(localStorage.getItem('rest_info')||'{"name":"","phone":""}');
@@ -179,6 +186,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
 });
 
 // --- Base de datos ---
+let editingDishId=null;
 function addDish(){
   const name=document.getElementById('pName').value.trim();
   const sec=document.getElementById('pSec').value;
@@ -186,13 +194,38 @@ function addDish(){
   const desc=document.getElementById('pDesc').value.trim();
   if(!name){toast('Pon un nombre');return;}
   if(isNaN(price)){toast('Pon un precio');return;}
-  dishes.push({id:Date.now(),name,sec,price,desc});
+  if(editingDishId){
+    const d=dishes.find(x=>x.id===editingDishId);
+    if(d){d.name=name;d.sec=sec;d.price=price;d.desc=desc;}
+    toast('Cambios guardados ✔');
+    cancelEditDish();
+  }else{
+    dishes.push({id:Date.now(),name,sec,price,desc});
+    toast('Añadido ✔');
+    document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
+    document.getElementById('pName').focus();
+  }
   save();renderDB();
-  document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
-  document.getElementById('pName').focus();
-  toast('Añadido ✔');
 }
-function delDish(id){if(!confirm('¿Eliminar este plato?'))return;dishes=dishes.filter(d=>d.id!==id);save();renderDB();}
+function editDish(id){
+  const d=dishes.find(x=>x.id===id);if(!d)return;
+  editingDishId=id;
+  document.getElementById('pName').value=d.name;
+  document.getElementById('pSec').value=d.sec;
+  document.getElementById('pPrice').value=d.price;
+  document.getElementById('pDesc').value=d.desc||'';
+  document.getElementById('btnDish').textContent='💾 Guardar cambios';
+  document.getElementById('btnCancelDish').style.display='inline-block';
+  document.getElementById('pName').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('pName').focus();
+}
+function cancelEditDish(){
+  editingDishId=null;
+  document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
+  document.getElementById('btnDish').textContent='+ Añadir a la base de datos';
+  document.getElementById('btnCancelDish').style.display='none';
+}
+function delDish(id){if(!confirm('¿Eliminar este plato?'))return;dishes=dishes.filter(d=>d.id!==id);if(editingDishId===id)cancelEditDish();save();renderDB();}
 function renderDB(){
   const c=document.getElementById('dbList');
   if(!dishes.length){c.innerHTML='<h2>Platos guardados</h2><div class="empty">Aún no hay platos. Añade el primero arriba.</div>';return;}
@@ -202,7 +235,7 @@ function renderDB(){
     if(!items.length)return;
     html+='<div class="secblock"><h3>'+SECS[s]+'</h3><table><tbody>';
     items.forEach(d=>{
-      html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right"><button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
+      html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="editDish('+d.id+')">✎</button> <button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
     });
     html+='</tbody></table></div>';
   });
@@ -235,6 +268,11 @@ function saveMenu(){
     postres:getChecked('selPostres'),bebidas:getChecked('selBebidas')
   };
   save();renderMenuPreview();toast('Menú guardado ✔');
+}
+function clearMenu(){
+  const t=document.getElementById('mType').value;
+  if(!confirm('¿Vaciar este menú y empezar de nuevo?'))return;
+  delete menus[t];save();loadMenu();toast('Menú vaciado');
 }
 function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
 function renderMenuPreview(){
