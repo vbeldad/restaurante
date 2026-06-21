@@ -117,6 +117,15 @@
 <div class="tab" id="historial">
   <div class="card">
     <h2>Historial de caja</h2>
+    <div class="row noprint" style="margin-bottom:14px">
+      <div style="flex:0;min-width:160px"><label>Ver por</label>
+        <select id="histVista" onchange="renderHistorial()">
+          <option value="dias">Días</option>
+          <option value="semanas">Semanas</option>
+          <option value="meses">Meses</option>
+        </select>
+      </div>
+    </div>
     <div id="histContent"></div>
   </div>
 </div>
@@ -745,13 +754,40 @@ function fechaLarga(f){
   const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   return d+' de '+meses[parseInt(m)-1]+' de '+a;
 }
+// Devuelve {año, semana ISO} de una fecha AAAA-MM-DD
+function semanaDe(f){
+  const d=new Date(f+'T00:00:00');
+  const t=new Date(d);
+  t.setDate(t.getDate()+3-((d.getDay()+6)%7)); // jueves de esa semana
+  const week1=new Date(t.getFullYear(),0,4);
+  const sem=1+Math.round(((t-week1)/86400000-3+((week1.getDay()+6)%7))/7);
+  return {anio:t.getFullYear(),sem};
+}
+function rangoSemana(f){
+  const d=new Date(f+'T00:00:00');
+  const lunes=new Date(d);lunes.setDate(d.getDate()-((d.getDay()+6)%7));
+  const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
+  const fmt=x=>x.getDate()+' '+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][x.getMonth()];
+  return fmt(lunes)+' - '+fmt(domingo)+' '+domingo.getFullYear();
+}
+function nombreMes(f){
+  const [a,m]=f.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return meses[parseInt(m)-1]+' '+a;
+}
+
 function renderHistorial(){
   const c=document.getElementById('histContent');
   if(!historial.length){c.innerHTML='<div class="empty">Aún no hay mesas cerradas. El historial se irá llenando a medida que cobres mesas.</div>';return;}
-  // Agrupar por fecha
+  const vista=document.getElementById('histVista').value;
+  if(vista==='dias')return renderHistDias(c);
+  if(vista==='semanas')return renderHistAgrupado(c,'semana');
+  if(vista==='meses')return renderHistAgrupado(c,'mes');
+}
+function renderHistDias(c){
   const porDia={};
   historial.forEach(h=>{(porDia[h.fecha]=porDia[h.fecha]||[]).push(h);});
-  const dias=Object.keys(porDia).sort().reverse(); // más reciente primero
+  const dias=Object.keys(porDia).sort().reverse();
   let html='';
   dias.forEach(f=>{
     const filas=porDia[f];
@@ -766,6 +802,25 @@ function renderHistorial(){
     });
     html+='</tbody></table>'+
       '<div class="total-box" style="margin-top:8px"><div style="color:var(--muted);font-size:.8rem">TOTAL DEL DÍA · '+filas.length+' mesa'+(filas.length===1?'':'s')+'</div><div class="num">'+eur(totalDia)+'</div></div></div>';
+  });
+  c.innerHTML=html;
+}
+function renderHistAgrupado(c,tipo){
+  // Agrupar por clave (semana o mes), guardando etiqueta y orden
+  const grupos={};
+  historial.forEach(h=>{
+    let clave,etiqueta;
+    if(tipo==='semana'){const {anio,sem}=semanaDe(h.fecha);clave=anio+'-W'+('0'+sem).slice(-2);etiqueta='Semana del '+rangoSemana(h.fecha);}
+    else{clave=h.fecha.slice(0,7);etiqueta=nombreMes(h.fecha);}
+    if(!grupos[clave])grupos[clave]={etiqueta,total:0,mesas:0};
+    grupos[clave].total+=h.total;grupos[clave].mesas++;
+  });
+  const claves=Object.keys(grupos).sort().reverse();
+  let html='';
+  claves.forEach(k=>{
+    const g=grupos[k];
+    html+='<div class="secblock"><h3>'+g.etiqueta.charAt(0).toUpperCase()+g.etiqueta.slice(1)+'</h3>'+
+      '<div class="total-box"><div style="color:var(--muted);font-size:.8rem">TOTAL · '+g.mesas+' mesa'+(g.mesas===1?'':'s')+'</div><div class="num">'+eur(g.total)+'</div></div></div>';
   });
   c.innerHTML=html;
 }
