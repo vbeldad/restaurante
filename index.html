@@ -54,6 +54,16 @@
   .multi{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px}
   .multi label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
   .multi input{width:auto}
+  .sec-acc{background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:6px;overflow:hidden}
+  .sec-acc summary{cursor:pointer;padding:10px 12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-size:.82rem;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .sec-acc summary::-webkit-details-marker{display:none}
+  .sec-acc summary::before{content:'▸';color:var(--muted);transition:.15s;font-size:.9rem}
+  .sec-acc[open] summary::before{transform:rotate(90deg)}
+  .sec-acc[open] summary{border-bottom:1px solid var(--line)}
+  .sec-items{display:flex;flex-direction:column;gap:6px;padding:10px 12px}
+  .sec-items label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
+  .sec-items input{width:auto}
+  .cnt{background:var(--accent);color:#fff;border-radius:20px;padding:1px 8px;font-size:.72rem;margin-left:auto;letter-spacing:0}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;opacity:0;transition:.3s;z-index:50;pointer-events:none}
   .toast.show{opacity:1}
   .preview{background:#fff;color:#222;border-radius:10px;padding:24px;margin-top:14px}
@@ -330,19 +340,36 @@ function renderGroups(){
     }else{
       list=secs.map(s=>{
         const items=dishes.filter(d=>d.sec===s);
-        return '<div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin:6px 0 2px;font-weight:700">'+SECS[s]+'</div>'+
-          items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
+        const marcados=items.filter(d=>g.items.includes(d.id)).length;
+        const badge=marcados?' <span class="cnt">'+marcados+'</span>':'';
+        const open=marcados?' open':'';
+        return '<details class="sec-acc"'+open+'><summary>'+SECS[s]+badge+'</summary>'+
+          '<div class="sec-items">'+items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('')+'</div></details>';
       }).join('');
     }
     return '<div class="menu-box" style="margin-bottom:12px">'+
       '<label>Apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
-      '<div class="multi" style="margin-top:8px;max-height:240px">'+list+'</div></div>';
+      '<div style="margin-top:8px">'+list+'</div></div>';
   }).join('');
 }
 function setTitulo(i,v){menuGroups[i].titulo=v;}
 function toggleItem(i,id){
   const arr=menuGroups[i].items;const p=arr.indexOf(id);
   if(p>=0)arr.splice(p,1);else arr.push(id);
+  // actualizar solo el contador del summary sin recargar todo (mantiene secciones abiertas)
+  updateCounts();
+}
+function updateCounts(){
+  document.querySelectorAll('#menuGroups .menu-box').forEach((box,i)=>{
+    const g=menuGroups[i];if(!g)return;
+    box.querySelectorAll('details.sec-acc').forEach(det=>{
+      const sum=det.querySelector('summary');
+      const labels=[...det.querySelectorAll('input:checked')].length;
+      let cnt=sum.querySelector('.cnt');
+      if(labels){if(!cnt){cnt=document.createElement('span');cnt.className='cnt';sum.appendChild(document.createTextNode(' '));sum.appendChild(cnt);}cnt.textContent=labels;}
+      else if(cnt){cnt.remove();}
+    });
+  });
 }
 function saveMenu(){
   const t=document.getElementById('mType').value;
