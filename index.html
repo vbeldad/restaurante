@@ -148,7 +148,7 @@
           <option value="entrantes">Entrantes</option>
           <option value="para_picar">Para picar</option>
           <option value="tapas">Tapas</option>
-          <option value="primeros">Primeros</option>
+          <option value="primeros">Ensaladas</option>
           <option value="segundos">Segundos</option>
           <option value="carnes">Carnes</option>
           <option value="pescados">Pescados</option>
@@ -246,7 +246,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Primeros",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
