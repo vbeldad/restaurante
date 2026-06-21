@@ -89,16 +89,24 @@
       <div><label>Sección</label>
         <select id="pSec">
           <option value="entrantes">Entrantes</option>
+          <option value="para_picar">Para picar</option>
+          <option value="tapas">Tapas</option>
           <option value="primeros">Primeros</option>
           <option value="segundos">Segundos</option>
-          <option value="postres">Postres</option>
-          <option value="tapas">Tapas</option>
+          <option value="carnes">Carnes</option>
+          <option value="pescados">Pescados</option>
+          <option value="brasa">De la brasa al plato</option>
+          <option value="vegetales">Vegetales</option>
+          <option value="hamburguesas">Hamburguesas</option>
           <option value="bocadillos_calientes">Bocadillos calientes</option>
           <option value="bocadillos_frios">Bocadillos fríos</option>
           <option value="bocadillos_especiales">Bocadillos especiales</option>
-          <option value="vegetales">Vegetales</option>
-          <option value="hamburguesas">Hamburguesas</option>
+          <option value="postres">Postres</option>
           <option value="bebidas">Bebidas</option>
+          <option value="refrescos">Refrescos</option>
+          <option value="cervezas">Cervezas</option>
+          <option value="sidras">Sidras</option>
+          <option value="vinos">Vinos</option>
         </select>
       </div>
       <div><label>Precio (€)</label><input id="pPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
@@ -128,16 +136,15 @@
         <select id="mType" onchange="loadMenu()">
           <option value="semana">Menú entre semana (L-V)</option>
           <option value="finde">Menú de fin de semana</option>
+          <option value="infantil">Menú infantil</option>
         </select>
       </div>
       <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
     </div>
-    <div class="menu-grid mt">
-      <div class="menu-box"><h4>Primeros a elegir</h4><div class="multi" id="selPrimeros"></div></div>
-      <div class="menu-box"><h4>Segundos a elegir</h4><div class="multi" id="selSegundos"></div></div>
-      <div class="menu-box"><h4>Postres a elegir</h4><div class="multi" id="selPostres"></div></div>
-      <div class="menu-box"><h4>Bebidas incluidas</h4><div class="multi" id="selBebidas"></div></div>
-    </div>
+    <h3 style="margin-top:18px">Apartados del menú</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">Añade los apartados que quieras (Primeros, Segundos, Postres, Bebidas...). En cada uno eliges de qué sección y qué platos se ofrecen.</p>
+    <div id="menuGroups"></div>
+    <button class="btn gray sm mt" onclick="addGroup()">+ Añadir apartado</button>
     <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
     <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
   </div>
@@ -156,8 +163,21 @@
 
 <!-- ====== CARTA ====== -->
 <div class="tab" id="carta">
+  <div class="card noprint">
+    <h2>Imprimir carta de precios</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">Marca las secciones que quieras incluir. Solo se imprimirá lo seleccionado.</p>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn gray sm" onclick="selectAllCarta(true)">Marcar todo</button>
+      <button class="btn gray sm" onclick="selectAllCarta(false)">Desmarcar todo</button>
+    </div>
+    <div class="multi" id="cartaSecs" style="max-height:none"></div>
+    <div class="mt">
+      <button class="btn green sm" onclick="cartaPDF()">📄 Descargar PDF</button>
+      <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
   <div class="card">
-    <h2>Carta completa <button class="btn gray sm noprint" style="float:right" onclick="window.print()">🖨️ Imprimir</button></h2>
+    <h2>Vista previa de la carta</h2>
     <div id="cartaList"></div>
   </div>
 </div>
@@ -166,9 +186,27 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SECS={entrantes:"Entrantes",primeros:"Primeros",segundos:"Segundos",postres:"Postres",tapas:"Tapas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bebidas:"Bebidas"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Primeros",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
+// Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
+(function migrateMenus(){
+  let changed=false;
+  Object.keys(menus).forEach(t=>{
+    const m=menus[t];
+    if(m&&!m.groups&&(m.primeros||m.segundos||m.postres||m.bebidas)){
+      m.groups=[
+        {titulo:'Primeros a elegir',sec:'primeros',items:m.primeros||[]},
+        {titulo:'Segundos a elegir',sec:'segundos',items:m.segundos||[]},
+        {titulo:'Postres',sec:'postres',items:m.postres||[]},
+        {titulo:'Bebida incluida',sec:'bebidas',items:m.bebidas||[]}
+      ];
+      delete m.primeros;delete m.segundos;delete m.postres;delete m.bebidas;
+      changed=true;
+    }
+  });
+  if(changed)localStorage.setItem('rest_menus',JSON.stringify(menus));
+})();
 let rest=JSON.parse(localStorage.getItem('rest_info')||'{"name":"","phone":""}');
 
 function save(){localStorage.setItem('rest_dishes',JSON.stringify(dishes));localStorage.setItem('rest_menus',JSON.stringify(menus));}
@@ -242,31 +280,50 @@ function renderDB(){
   c.innerHTML=html;
 }
 
-// --- Menús ---
-function fillMulti(boxId,sec,selected){
-  const items=dishes.filter(d=>d.sec===sec);
-  const box=document.getElementById(boxId);
-  if(!items.length){box.innerHTML='<span class="empty" style="padding:6px">Sin platos en esta sección</span>';return;}
-  box.innerHTML=items.map(d=>'<label><input type="checkbox" value="'+d.id+'" '+(selected.includes(d.id)?'checked':'')+'> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
-}
+// --- Menús (sistema de apartados flexibles) ---
+// Cada menú: {price, groups:[{titulo, sec, items:[ids]}]}
+let menuGroups=[]; // estado en edición
+
+const DEFAULT_GROUPS={
+  semana:[{titulo:'Primeros a elegir',sec:'primeros',items:[]},{titulo:'Segundos a elegir',sec:'segundos',items:[]},{titulo:'Postres',sec:'postres',items:[]},{titulo:'Bebida incluida',sec:'bebidas',items:[]}],
+  finde:[{titulo:'Primeros a elegir',sec:'primeros',items:[]},{titulo:'Segundos a elegir',sec:'segundos',items:[]},{titulo:'Postres',sec:'postres',items:[]},{titulo:'Bebida incluida',sec:'bebidas',items:[]}],
+  infantil:[{titulo:'Plato principal',sec:'segundos',items:[]},{titulo:'Postre',sec:'postres',items:[]},{titulo:'Bebida',sec:'refrescos',items:[]}]
+};
+
 function loadMenu(){
   const t=document.getElementById('mType').value;
-  const m=menus[t]||{price:'',primeros:[],segundos:[],postres:[],bebidas:[]};
-  document.getElementById('mPrice').value=m.price;
-  fillMulti('selPrimeros','primeros',m.primeros);
-  fillMulti('selSegundos','segundos',m.segundos);
-  fillMulti('selPostres','postres',m.postres);
-  fillMulti('selBebidas','bebidas',m.bebidas);
-  renderMenuPreview();
+  const m=menus[t];
+  if(m&&m.groups){menuGroups=JSON.parse(JSON.stringify(m.groups));document.getElementById('mPrice').value=m.price;}
+  else{menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));document.getElementById('mPrice').value='';}
+  renderGroups();renderMenuPreview();
 }
-function getChecked(boxId){return [...document.querySelectorAll('#'+boxId+' input:checked')].map(i=>parseInt(i.value));}
+function secOptions(sel){return Object.keys(SECS).map(s=>'<option value="'+s+'" '+(s===sel?'selected':'')+'>'+SECS[s]+'</option>').join('');}
+function renderGroups(){
+  const c=document.getElementById('menuGroups');
+  if(!menuGroups.length){c.innerHTML='<div class="empty">Sin apartados. Pulsa "Añadir apartado".</div>';return;}
+  c.innerHTML=menuGroups.map((g,i)=>{
+    const items=dishes.filter(d=>d.sec===g.sec);
+    const list=items.length?items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join(''):'<span class="empty" style="padding:6px">Sin platos en esta sección</span>';
+    return '<div class="menu-box" style="margin-bottom:12px">'+
+      '<div class="row" style="align-items:flex-end">'+
+      '<div style="flex:2"><label>Título del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)"></div>'+
+      '<div><label>Sección</label><select onchange="setSec('+i+',this.value)">'+secOptions(g.sec)+'</select></div>'+
+      '<div style="flex:0"><button class="btn danger sm" onclick="delGroup('+i+')">✕</button></div>'+
+      '</div>'+
+      '<div class="multi" style="margin-top:8px">'+list+'</div></div>';
+  }).join('');
+}
+function addGroup(){menuGroups.push({titulo:'Nuevo apartado',sec:'primeros',items:[]});renderGroups();}
+function delGroup(i){menuGroups.splice(i,1);renderGroups();}
+function setTitulo(i,v){menuGroups[i].titulo=v;}
+function setSec(i,v){menuGroups[i].sec=v;menuGroups[i].items=[];renderGroups();}
+function toggleItem(i,id){
+  const arr=menuGroups[i].items;const p=arr.indexOf(id);
+  if(p>=0)arr.splice(p,1);else arr.push(id);
+}
 function saveMenu(){
   const t=document.getElementById('mType').value;
-  menus[t]={
-    price:parseFloat(document.getElementById('mPrice').value)||0,
-    primeros:getChecked('selPrimeros'),segundos:getChecked('selSegundos'),
-    postres:getChecked('selPostres'),bebidas:getChecked('selBebidas')
-  };
+  menus[t]={price:parseFloat(document.getElementById('mPrice').value)||0,groups:JSON.parse(JSON.stringify(menuGroups))};
   save();renderMenuPreview();toast('Menú guardado ✔');
 }
 function clearMenu(){
@@ -275,48 +332,95 @@ function clearMenu(){
   delete menus[t];save();loadMenu();toast('Menú vaciado');
 }
 function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
+function menuTitle(t){return t==='semana'?'Menú del Día (Lunes a Viernes)':t==='finde'?'Menú de Fin de Semana':'Menú Infantil';}
 function renderMenuPreview(){
   const t=document.getElementById('mType').value;
-  const tit=t==='semana'?'Menú del Día (Lunes a Viernes)':'Menú de Fin de Semana';
   const m=menus[t];
   const c=document.getElementById('menuPreview');
-  if(!m){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
-  const sec=(arr,t)=>arr&&arr.length?'<div class="ml"><b>'+t+':</b><br>'+arr.map(nameOf).join(' · ')+'</div>':'';
-  c.innerHTML='<div class="preview"><h3>'+tit+'</h3>'+
-    sec(m.primeros,'Primeros a elegir')+sec(m.segundos,'Segundos a elegir')+
-    sec(m.postres,'Postres')+sec(m.bebidas,'Bebida incluida')+
-    '<div class="pr">'+eur(m.price)+'</div></div>';
+  if(!m||!m.groups){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
+  let html='<div class="preview"><h3>'+menuTitle(t)+'</h3>';
+  m.groups.forEach(g=>{
+    if(!g.items||!g.items.length)return;
+    html+='<div class="ml"><b>'+g.titulo+':</b><br>'+g.items.map(nameOf).filter(Boolean).join(' · ')+'</div>';
+  });
+  html+='<div class="pr">'+eur(m.price)+'</div></div>';
+  c.innerHTML=html;
 }
 
 // --- Carta ---
+let cartaSel=null; // secciones seleccionadas (Set de claves)
+let _cartaSeen=new Set();
+function buildCartaSecs(){
+  // secciones que tienen al menos un plato
+  const conPlatos=Object.keys(SECS).filter(s=>dishes.some(d=>d.sec===s));
+  if(cartaSel===null)cartaSel=new Set(conPlatos); // por defecto todas marcadas
+  else conPlatos.forEach(s=>{if(!_cartaSeen.has(s)){cartaSel.add(s);}}); // sección nueva => marcada
+  _cartaSeen=new Set(conPlatos);
+  const box=document.getElementById('cartaSecs');
+  if(!conPlatos.length){box.innerHTML='<span class="empty" style="padding:6px">No hay platos todavía.</span>';return;}
+  box.innerHTML=conPlatos.map(s=>'<label><input type="checkbox" '+(cartaSel.has(s)?'checked':'')+' onchange="toggleCartaSec(\''+s+'\')"> '+SECS[s]+' <span class="pill">'+dishes.filter(d=>d.sec===s).length+'</span></label>').join('');
+}
+function toggleCartaSec(s){if(cartaSel.has(s))cartaSel.delete(s);else cartaSel.add(s);renderCarta();}
+function selectAllCarta(all){
+  const conPlatos=Object.keys(SECS).filter(s=>dishes.some(d=>d.sec===s));
+  cartaSel=all?new Set(conPlatos):new Set();
+  buildCartaSecs();renderCarta();
+}
 function renderCarta(){
+  buildCartaSecs();
   const c=document.getElementById('cartaList');
   if(!dishes.length){c.innerHTML='<div class="empty">No hay platos.</div>';return;}
-  let html='<div class="preview">';
-  Object.keys(SECS).forEach(s=>{
+  const secs=Object.keys(SECS).filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  if(!secs.length){c.innerHTML='<div class="empty">No hay ninguna sección seleccionada.</div>';return;}
+  let html='<div class="preview">'+(rest.name?'<h3>'+rest.name+'</h3>':'');
+  secs.forEach(s=>{
     const items=dishes.filter(d=>d.sec===s);
-    if(!items.length)return;
     html+='<h3>'+SECS[s]+'</h3>';
     items.forEach(d=>{html+='<div class="ml" style="display:flex;justify-content:space-between"><span><b>'+d.name+'</b>'+(d.desc?' — <i style="color:#666;font-size:.85em">'+d.desc+'</i>':'')+'</span><span style="color:var(--accent);font-weight:700;white-space:nowrap">'+eur(d.price)+'</span></div>';});
   });
   html+='</div>';
   c.innerHTML=html;
 }
+function cartaPDF(){
+  const secs=Object.keys(SECS).filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  if(!secs.length){toast('Selecciona alguna sección');return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=22;
+  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
+  if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
+  doc.setFontSize(13);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Carta',105,y,{align:'center'});y+=10;
+  secs.forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s);
+    if(y>265){doc.addPage();y=20;}
+    doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(SECS[s].toUpperCase(),20,y);y+=2;
+    doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=7;
+    doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
+    items.forEach(d=>{
+      if(y>278){doc.addPage();y=20;}
+      doc.text(d.name,22,y);
+      doc.setFont(undefined,'bold');doc.text(eur(d.price),188,y,{align:'right'});doc.setFont(undefined,'normal');
+      y+=6;
+      if(d.desc){doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(d.desc,24,y);doc.setFontSize(11);doc.setTextColor(40,40,40);y+=5;}
+    });
+    y+=5;
+  });
+  doc.save('carta.pdf');
+  toast('PDF generado ✔');
+}
 
 // --- Texto / PDF / Envío del menú ---
 function currentMenu(){
   const t=document.getElementById('mType').value;
-  return {t,m:menus[t],tit:t==='semana'?'Menú del Día (Lunes a Viernes)':'Menú de Fin de Semana'};
+  return {t,m:menus[t],tit:menuTitle(t)};
 }
 function menuText(){
   const {m,tit}=currentMenu();
-  if(!m){return '';}
+  if(!m||!m.groups){return '';}
   let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n\n';
-  const sec=(arr,t)=>arr&&arr.length?t+':\n  '+arr.map(nameOf).join('\n  ')+'\n\n':'';
-  txt+=sec(m.primeros,'PRIMEROS A ELEGIR');
-  txt+=sec(m.segundos,'SEGUNDOS A ELEGIR');
-  txt+=sec(m.postres,'POSTRES');
-  txt+=sec(m.bebidas,'BEBIDA INCLUIDA');
+  m.groups.forEach(g=>{
+    const names=g.items.map(nameOf).filter(Boolean);
+    if(names.length)txt+=g.titulo.toUpperCase()+':\n  '+names.join('\n  ')+'\n\n';
+  });
   txt+='PRECIO: '+eur(m.price);
   if(rest.phone)txt+='\n\nReservas: '+rest.phone;
   return txt;
@@ -338,7 +442,7 @@ function sendEmail(){
 }
 function menuPDF(){
   const {m,tit}=currentMenu();
-  if(!m){toast('Guarda primero el menú');return;}
+  if(!m||!m.groups){toast('Guarda primero el menú');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
   let y=22;
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
@@ -346,16 +450,14 @@ function menuPDF(){
   doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text(tit,105,y,{align:'center'});y+=4;
   doc.setDrawColor(224,123,57);doc.line(60,y,150,y);y+=12;
   doc.setTextColor(40,40,40);
-  const block=(arr,t)=>{
-    if(!arr||!arr.length)return;
-    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(t,20,y);y+=7;
+  m.groups.forEach(g=>{
+    const names=g.items.map(nameOf).filter(Boolean);
+    if(!names.length)return;
+    if(y>265){doc.addPage();y=20;}
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(g.titulo.toUpperCase(),20,y);y+=7;
     doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
-    arr.forEach(id=>{doc.text('•  '+nameOf(id),26,y);y+=6;});y+=4;
-  };
-  block(m.primeros,'PRIMEROS A ELEGIR');
-  block(m.segundos,'SEGUNDOS A ELEGIR');
-  block(m.postres,'POSTRES');
-  block(m.bebidas,'BEBIDA INCLUIDA');
+    names.forEach(n=>{if(y>275){doc.addPage();y=20;}doc.text('•  '+n,26,y);y+=6;});y+=4;
+  });
   y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
   doc.text('PRECIO: '+eur(m.price),105,y,{align:'center'});y+=10;
   if(rest.phone){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});}
