@@ -102,6 +102,7 @@
           <option value="bocadillos_frios">Bocadillos fríos</option>
           <option value="bocadillos_especiales">Bocadillos especiales</option>
           <option value="postres">Postres</option>
+          <option value="infantil">Infantil</option>
           <option value="bebidas">Bebidas</option>
           <option value="refrescos">Refrescos</option>
           <option value="cervezas">Cervezas</option>
@@ -141,10 +142,12 @@
       </div>
       <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
     </div>
+    <div class="row mt">
+      <div style="flex:2"><label>Anotación / fecha (opcional)</label><input id="mNote" placeholder="Ej: Semana del 23 al 27 de junio"></div>
+    </div>
     <h3 style="margin-top:18px">Apartados del menú</h3>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">Añade los apartados que quieras (Primeros, Segundos, Postres, Bebidas...). En cada uno eliges de qué sección y qué platos se ofrecen.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado elige la sección en el desplegable y marca los platos que se ofrecen.</p>
     <div id="menuGroups"></div>
-    <button class="btn gray sm mt" onclick="addGroup()">+ Añadir apartado</button>
     <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
     <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
   </div>
@@ -186,7 +189,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Primeros",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Primeros",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
@@ -280,41 +283,58 @@ function renderDB(){
   c.innerHTML=html;
 }
 
-// --- Menús (sistema de apartados flexibles) ---
-// Cada menú: {price, groups:[{titulo, sec, items:[ids]}]}
+// --- Menús (apartados fijos con desplegable filtrado) ---
+// Cada menú: {price, note, groups:[{titulo, sec, items:[ids]}]}
 let menuGroups=[]; // estado en edición
 
+// Secciones permitidas en cada apartado
+const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
+const POSTRE_SECS=['postres'];
+const BEBIDA_SECS=['bebidas','refrescos','cervezas','sidras','vinos'];
+function allowedSecs(tipo){
+  if(tipo==='comida')return FOOD_SECS;
+  if(tipo==='postre')return POSTRE_SECS;
+  if(tipo==='bebida')return BEBIDA_SECS;
+  return Object.keys(SECS);
+}
+
+// Apartados fijos por tipo de menú. tipo = qué desplegable mostrar
 const DEFAULT_GROUPS={
-  semana:[{titulo:'Primeros a elegir',sec:'primeros',items:[]},{titulo:'Segundos a elegir',sec:'segundos',items:[]},{titulo:'Postres',sec:'postres',items:[]},{titulo:'Bebida incluida',sec:'bebidas',items:[]}],
-  finde:[{titulo:'Primeros a elegir',sec:'primeros',items:[]},{titulo:'Segundos a elegir',sec:'segundos',items:[]},{titulo:'Postres',sec:'postres',items:[]},{titulo:'Bebida incluida',sec:'bebidas',items:[]}],
-  infantil:[{titulo:'Plato principal',sec:'segundos',items:[]},{titulo:'Postre',sec:'postres',items:[]},{titulo:'Bebida',sec:'refrescos',items:[]}]
+  semana:[{titulo:'Primeros',sec:'primeros',tipo:'comida',items:[]},{titulo:'Segundos',sec:'segundos',tipo:'comida',items:[]},{titulo:'Postres',sec:'postres',tipo:'postre',items:[]},{titulo:'Bebida',sec:'bebidas',tipo:'bebida',items:[]}],
+  finde:[{titulo:'Primeros',sec:'primeros',tipo:'comida',items:[]},{titulo:'Segundos',sec:'segundos',tipo:'comida',items:[]},{titulo:'Postres',sec:'postres',tipo:'postre',items:[]},{titulo:'Bebida',sec:'bebidas',tipo:'bebida',items:[]}],
+  infantil:[{titulo:'Primeros',sec:'primeros',tipo:'comida',items:[]},{titulo:'Segundos',sec:'segundos',tipo:'comida',items:[]},{titulo:'Postres',sec:'postres',tipo:'postre',items:[]},{titulo:'Bebida',sec:'bebidas',tipo:'bebida',items:[]}]
 };
 
 function loadMenu(){
   const t=document.getElementById('mType').value;
   const m=menus[t];
-  if(m&&m.groups){menuGroups=JSON.parse(JSON.stringify(m.groups));document.getElementById('mPrice').value=m.price;}
-  else{menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));document.getElementById('mPrice').value='';}
+  if(m&&m.groups){
+    menuGroups=JSON.parse(JSON.stringify(m.groups));
+    // asegurar que cada grupo tenga 'tipo' (migración)
+    menuGroups.forEach(g=>{if(!g.tipo){g.tipo=POSTRE_SECS.includes(g.sec)?'postre':BEBIDA_SECS.includes(g.sec)?'bebida':'comida';}});
+    document.getElementById('mPrice').value=m.price;
+    document.getElementById('mNote').value=m.note||'';
+  }else{
+    menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));
+    document.getElementById('mPrice').value='';
+    document.getElementById('mNote').value='';
+  }
   renderGroups();renderMenuPreview();
 }
-function secOptions(sel){return Object.keys(SECS).map(s=>'<option value="'+s+'" '+(s===sel?'selected':'')+'>'+SECS[s]+'</option>').join('');}
+function secOptions(allowed,sel){return allowed.map(s=>'<option value="'+s+'" '+(s===sel?'selected':'')+'>'+SECS[s]+'</option>').join('');}
 function renderGroups(){
   const c=document.getElementById('menuGroups');
-  if(!menuGroups.length){c.innerHTML='<div class="empty">Sin apartados. Pulsa "Añadir apartado".</div>';return;}
   c.innerHTML=menuGroups.map((g,i)=>{
     const items=dishes.filter(d=>d.sec===g.sec);
     const list=items.length?items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join(''):'<span class="empty" style="padding:6px">Sin platos en esta sección</span>';
     return '<div class="menu-box" style="margin-bottom:12px">'+
       '<div class="row" style="align-items:flex-end">'+
-      '<div style="flex:2"><label>Título del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)"></div>'+
-      '<div><label>Sección</label><select onchange="setSec('+i+',this.value)">'+secOptions(g.sec)+'</select></div>'+
-      '<div style="flex:0"><button class="btn danger sm" onclick="delGroup('+i+')">✕</button></div>'+
+      '<div style="flex:2"><label>Apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)"></div>'+
+      '<div><label>Sección</label><select onchange="setSec('+i+',this.value)">'+secOptions(allowedSecs(g.tipo),g.sec)+'</select></div>'+
       '</div>'+
       '<div class="multi" style="margin-top:8px">'+list+'</div></div>';
   }).join('');
 }
-function addGroup(){menuGroups.push({titulo:'Nuevo apartado',sec:'primeros',items:[]});renderGroups();}
-function delGroup(i){menuGroups.splice(i,1);renderGroups();}
 function setTitulo(i,v){menuGroups[i].titulo=v;}
 function setSec(i,v){menuGroups[i].sec=v;menuGroups[i].items=[];renderGroups();}
 function toggleItem(i,id){
@@ -323,7 +343,7 @@ function toggleItem(i,id){
 }
 function saveMenu(){
   const t=document.getElementById('mType').value;
-  menus[t]={price:parseFloat(document.getElementById('mPrice').value)||0,groups:JSON.parse(JSON.stringify(menuGroups))};
+  menus[t]={price:parseFloat(document.getElementById('mPrice').value)||0,note:document.getElementById('mNote').value.trim(),groups:JSON.parse(JSON.stringify(menuGroups))};
   save();renderMenuPreview();toast('Menú guardado ✔');
 }
 function clearMenu(){
@@ -339,6 +359,7 @@ function renderMenuPreview(){
   const c=document.getElementById('menuPreview');
   if(!m||!m.groups){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
   let html='<div class="preview"><h3>'+menuTitle(t)+'</h3>';
+  if(m.note)html+='<div style="text-align:center;color:#666;margin-bottom:8px">'+m.note+'</div>';
   m.groups.forEach(g=>{
     if(!g.items||!g.items.length)return;
     html+='<div class="ml"><b>'+g.titulo+':</b><br>'+g.items.map(nameOf).filter(Boolean).join(' · ')+'</div>';
@@ -416,7 +437,9 @@ function currentMenu(){
 function menuText(){
   const {m,tit}=currentMenu();
   if(!m||!m.groups){return '';}
-  let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n\n';
+  let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n';
+  if(m.note)txt+=m.note+'\n';
+  txt+='\n';
   m.groups.forEach(g=>{
     const names=g.items.map(nameOf).filter(Boolean);
     if(names.length)txt+=g.titulo.toUpperCase()+':\n  '+names.join('\n  ')+'\n\n';
@@ -448,7 +471,8 @@ function menuPDF(){
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
   if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text(rest.name,105,y,{align:'center'});y+=9;}
   doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text(tit,105,y,{align:'center'});y+=4;
-  doc.setDrawColor(224,123,57);doc.line(60,y,150,y);y+=12;
+  doc.setDrawColor(224,123,57);doc.line(60,y,150,y);y+=8;
+  if(m.note){doc.setFontSize(10);doc.setFont(undefined,'italic');doc.setTextColor(110,110,110);doc.text(m.note,105,y,{align:'center'});y+=8;}
   doc.setTextColor(40,40,40);
   m.groups.forEach(g=>{
     const names=g.items.map(nameOf).filter(Boolean);
