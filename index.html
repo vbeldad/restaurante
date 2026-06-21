@@ -89,6 +89,7 @@
 <header><h1>🍽️ Gestión de <span>Restaurante</span></h1></header>
 <nav>
   <button class="active" data-tab="mesas">🪑 Mesas</button>
+  <button data-tab="historial">📊 Historial</button>
   <button data-tab="db">Base de datos</button>
   <button data-tab="menus">Menús</button>
   <button data-tab="carta">Carta / Precios</button>
@@ -110,6 +111,14 @@
   </div>
   <!-- Vista detalle de una mesa -->
   <div id="mesaDetalle" style="display:none"></div>
+</div>
+
+<!-- ====== HISTORIAL ====== -->
+<div class="tab" id="historial">
+  <div class="card">
+    <h2>Historial de caja</h2>
+    <div id="histContent"></div>
+  </div>
 </div>
 
 <!-- ====== BASE DE DATOS ====== -->
@@ -251,8 +260,9 @@ let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 })();
 let rest=JSON.parse(localStorage.getItem('rest_info')||'{"name":"","phone":""}');
 let mesas=JSON.parse(localStorage.getItem('rest_mesas')||'[]');
+let historial=JSON.parse(localStorage.getItem('rest_historial')||'[]');
 
-function save(){localStorage.setItem('rest_dishes',JSON.stringify(dishes));localStorage.setItem('rest_menus',JSON.stringify(menus));localStorage.setItem('rest_mesas',JSON.stringify(mesas));}
+function save(){localStorage.setItem('rest_dishes',JSON.stringify(dishes));localStorage.setItem('rest_menus',JSON.stringify(menus));localStorage.setItem('rest_mesas',JSON.stringify(mesas));localStorage.setItem('rest_historial',JSON.stringify(historial));}
 function saveRest(){rest={name:document.getElementById('rName').value,phone:document.getElementById('rPhone').value};localStorage.setItem('rest_info',JSON.stringify(rest));}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
 function eur(n){return Number(n||0).toFixed(2)+' €';}
@@ -265,6 +275,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
   if(b.dataset.tab==='menus')loadMenu();
   if(b.dataset.tab==='carta')renderCarta();
   if(b.dataset.tab==='mesas')renderMesas();
+  if(b.dataset.tab==='historial')renderHistorial();
 });
 
 // --- Base de datos ---
@@ -552,7 +563,7 @@ function menuPDF(){
 
 // --- Copia de seguridad ---
 function exportData(){
-  const data={dishes,menus,rest,mesas,fecha:new Date().toISOString()};
+  const data={dishes,menus,rest,mesas,historial,fecha:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -570,7 +581,7 @@ function importData(e){
       const data=JSON.parse(ev.target.result);
       if(!data.dishes&&!data.menus){toast('Archivo no válido');return;}
       if(!confirm('Esto reemplazará todos los datos actuales por los de la copia. ¿Continuar?'))return;
-      dishes=data.dishes||[];menus=data.menus||{};rest=data.rest||{name:'',phone:''};mesas=data.mesas||[];
+      dishes=data.dishes||[];menus=data.menus||{};rest=data.rest||{name:'',phone:''};mesas=data.mesas||[];historial=data.historial||[];
       save();localStorage.setItem('rest_info',JSON.stringify(rest));
       document.getElementById('rName').value=rest.name||'';
       document.getElementById('rPhone').value=rest.phone||'';
@@ -693,6 +704,14 @@ function cambiaQty(idx,delta){
 function cerrarMesa(){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
   if(!confirm('¿Cobrar y cerrar la mesa "'+m.nombre+'"? Se eliminará de las mesas abiertas.'))return;
+  const ahora=new Date();
+  historial.push({
+    id:Date.now(),
+    nombre:m.nombre,
+    total:mesaTotal(m),
+    fecha:ahora.toISOString().slice(0,10), // AAAA-MM-DD
+    hora:ahora.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})
+  });
   mesas=mesas.filter(x=>x.id!==mesaActivaId);save();
   toast('Mesa cobrada ✔');renderMesas();
 }
@@ -718,6 +737,68 @@ function mesaPDF(){
   doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text('¡Gracias por su visita!',W/2,y,{align:'center'});
   doc.save('ticket-'+m.nombre.replace(/\s+/g,'_')+'.pdf');
   toast('Ticket generado ✔');
+}
+
+// --- Historial de caja ---
+function fechaLarga(f){
+  const [a,m,d]=f.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return d+' de '+meses[parseInt(m)-1]+' de '+a;
+}
+function renderHistorial(){
+  const c=document.getElementById('histContent');
+  if(!historial.length){c.innerHTML='<div class="empty">Aún no hay mesas cerradas. El historial se irá llenando a medida que cobres mesas.</div>';return;}
+  // Agrupar por fecha
+  const porDia={};
+  historial.forEach(h=>{(porDia[h.fecha]=porDia[h.fecha]||[]).push(h);});
+  const dias=Object.keys(porDia).sort().reverse(); // más reciente primero
+  let html='';
+  dias.forEach(f=>{
+    const filas=porDia[f];
+    const totalDia=filas.reduce((s,h)=>s+h.total,0);
+    html+='<div class="secblock"><h3 style="display:flex;justify-content:space-between;align-items:center">'+
+      '<span>'+fechaLarga(f)+'</span>'+
+      '<span style="display:flex;gap:8px;align-items:center"><button class="btn green sm noprint" onclick="cierrePDF(\''+f+'\')">📄 Cierre</button>'+
+      '<button class="btn danger sm noprint" onclick="borrarDia(\''+f+'\')">✕</button></span></h3>'+
+      '<table><tbody>';
+    filas.forEach(h=>{
+      html+='<tr><td>'+h.nombre+'</td><td style="color:var(--muted);font-size:.85rem">'+h.hora+'</td><td class="price">'+eur(h.total)+'</td></tr>';
+    });
+    html+='</tbody></table>'+
+      '<div class="total-box" style="margin-top:8px"><div style="color:var(--muted);font-size:.8rem">TOTAL DEL DÍA · '+filas.length+' mesa'+(filas.length===1?'':'s')+'</div><div class="num">'+eur(totalDia)+'</div></div></div>';
+  });
+  c.innerHTML=html;
+}
+function borrarDia(f){
+  if(!confirm('¿Borrar del historial todas las mesas del '+fechaLarga(f)+'? Esto no se puede deshacer.'))return;
+  historial=historial.filter(h=>h.fecha!==f);save();renderHistorial();toast('Día borrado');
+}
+function cierrePDF(f){
+  const filas=historial.filter(h=>h.fecha===f);
+  if(!filas.length)return;
+  const totalDia=filas.reduce((s,h)=>s+h.total,0);
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=22;
+  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
+  if(rest.name){doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
+  doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Cierre de caja',105,y,{align:'center'});y+=7;
+  doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(fechaLarga(f),105,y,{align:'center'});y+=10;
+  doc.setDrawColor(200,200,200);doc.line(20,y,190,y);y+=8;
+  doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);
+  doc.text('Mesa',20,y);doc.text('Hora',120,y);doc.text('Importe',190,y,{align:'right'});y+=2;
+  doc.line(20,y,190,y);y+=6;
+  doc.setFont(undefined,'normal');
+  filas.forEach(h=>{
+    if(y>275){doc.addPage();y=20;}
+    doc.text(h.nombre,20,y);doc.text(h.hora,120,y);doc.text(eur(h.total),190,y,{align:'right'});y+=6;
+  });
+  y+=2;doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=9;
+  doc.setFontSize(15);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
+  doc.text('TOTAL DEL DÍA',20,y);doc.text(eur(totalDia),190,y,{align:'right'});y+=8;
+  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);
+  doc.text(filas.length+' mesa'+(filas.length===1?'':'s')+' cobrada'+(filas.length===1?'':'s'),20,y);
+  doc.save('cierre-caja-'+f+'.pdf');
+  toast('Cierre generado ✔');
 }
 
 // Cargar datos del restaurante
