@@ -493,10 +493,13 @@ function renderMenuPreview(){
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
     if(!ids.length)return;
-    html+='<div class="ml"><b>'+g.titulo+':</b><br>'+ids.map(id=>{
+    html+='<div class="ml"><b style="color:var(--accent)">'+g.titulo+'</b>';
+    ids.forEach(id=>{
       const de=descOf(id);
-      return nameOf(id)+(de?' <span style="color:#888;font-size:.88em">('+de+')</span>':'');
-    }).join(' · ')+'</div>';
+      html+='<div style="margin:5px 0 5px 4px"><span style="font-weight:700;font-size:1rem">'+nameOf(id)+'</span>'+
+        (de?'<br><span style="color:#777;font-size:.82rem;font-weight:400">'+de+'</span>':'')+'</div>';
+    });
+    html+='</div>';
   });
   html+='<div class="pr">'+eur(m.price)+'</div>';
   html+='<div style="text-align:center;color:#888;font-size:.82rem;font-style:italic;margin-top:12px;border-top:1px solid #ddd;padding-top:10px">'+MSG_ALERGIAS+'</div></div>';
@@ -576,8 +579,15 @@ function menuText(){
   if(m.note)txt+=m.note+'\n';
   txt+='\n';
   m.groups.forEach(g=>{
-    const names=g.items.map(platoConDesc).filter(Boolean);
-    if(names.length)txt+=g.titulo.toUpperCase()+':\n  '+names.join('\n  ')+'\n\n';
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
+    txt+=g.titulo.toUpperCase()+':\n';
+    ids.forEach(id=>{
+      txt+='  '+nameOf(id)+'\n';
+      const de=descOf(id);
+      if(de)txt+='     '+de+'\n';
+    });
+    txt+='\n';
   });
   txt+='PRECIO: '+eur(m.price);
   if(rest.phone)txt+='\n\nReservas: '+rest.phone;
@@ -611,14 +621,21 @@ function menuPDF(){
   if(m.note){doc.setFontSize(10);doc.setFont(undefined,'italic');doc.setTextColor(110,110,110);doc.text(m.note,105,y,{align:'center'});y+=8;}
   doc.setTextColor(40,40,40);
   m.groups.forEach(g=>{
-    const names=g.items.map(platoConDesc).filter(Boolean);
-    if(!names.length)return;
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
     if(y>265){doc.addPage();y=20;}
     doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(g.titulo.toUpperCase(),20,y);y+=7;
-    doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
-    names.forEach(n=>{
-      const lineas=doc.splitTextToSize('•  '+n,165);
-      lineas.forEach(ln=>{if(y>275){doc.addPage();y=20;}doc.text(ln,26,y);y+=6;});
+    ids.forEach(id=>{
+      if(y>275){doc.addPage();y=20;}
+      doc.setFont(undefined,'bold');doc.setFontSize(11);doc.setTextColor(40,40,40);
+      doc.text('•  '+nameOf(id),26,y);y+=5;
+      const de=descOf(id);
+      if(de){
+        doc.setFont(undefined,'italic');doc.setFontSize(9);doc.setTextColor(120,120,120);
+        const lineas=doc.splitTextToSize(de,150);
+        lineas.forEach(ln=>{if(y>278){doc.addPage();y=20;}doc.text(ln,31,y);y+=4.5;});
+      }
+      y+=1.5;
     });y+=4;
   });
   y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
