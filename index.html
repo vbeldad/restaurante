@@ -178,6 +178,7 @@
           <option value="pescados">Pescados</option>
           <option value="brasa">De la brasa al plato</option>
           <option value="casa">Platos de la casa</option>
+          <option value="tablas_ibericas">Tablas Ibéricas</option>
           <option value="vegetales">Vegetales</option>
           <option value="hamburguesas">Hamburguesas</option>
           <option value="bocadillos_calientes">Bocadillos calientes</option>
@@ -291,7 +292,7 @@ if(!appActivada()){
     document.getElementById('actCode').focus();
   });
 }
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
@@ -394,7 +395,7 @@ function renderDB(){
 let menuGroups=[]; // estado en edición
 
 // Secciones que entran en cada tipo de apartado
-const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
+const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','tablas_ibericas','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
 const POSTRE_SECS=['postres'];
 const BEBIDA_SECS=['bebidas','refrescos','cervezas','sidras','vinos'];
 function tipoSecs(tipo){
@@ -439,7 +440,7 @@ function renderGroups(){
     if(!items.length){
       list='<span class="empty" style="padding:6px">No hay platos de este tipo en la base de datos</span>';
     }else{
-      list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
+      list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+(d.desc?' <span style="color:var(--muted);font-size:.82rem">— '+d.desc+'</span>':'')+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
     }
     const n=g.items.length;
     const badge=n?' <span class="cnt">'+n+'</span>':'';
@@ -478,6 +479,8 @@ function clearMenu(){
   delete menus[t];save();loadMenu();toast('Menú vaciado');
 }
 function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
+function descOf(id){const d=dishes.find(x=>x.id===id);return d&&d.desc?d.desc:'';}
+function platoConDesc(id){const n=nameOf(id);if(!n)return '';const de=descOf(id);return de?n+' ('+de+')':n;}
 function menuTitle(t){return t==='semana'?'Menú del Día (Lunes a Viernes)':t==='finde'?'Menú de Fin de Semana':'Menú Infantil';}
 const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, por favor comunícalo a nuestro personal.';
 function renderMenuPreview(){
@@ -488,8 +491,12 @@ function renderMenuPreview(){
   let html='<div class="preview"><h3>'+menuTitle(t)+'</h3>';
   if(m.note)html+='<div style="text-align:center;color:#666;margin-bottom:8px">'+m.note+'</div>';
   m.groups.forEach(g=>{
-    if(!g.items||!g.items.length)return;
-    html+='<div class="ml"><b>'+g.titulo+':</b><br>'+g.items.map(nameOf).filter(Boolean).join(' · ')+'</div>';
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
+    html+='<div class="ml"><b>'+g.titulo+':</b><br>'+ids.map(id=>{
+      const de=descOf(id);
+      return nameOf(id)+(de?' <span style="color:#888;font-size:.88em">('+de+')</span>':'');
+    }).join(' · ')+'</div>';
   });
   html+='<div class="pr">'+eur(m.price)+'</div>';
   html+='<div style="text-align:center;color:#888;font-size:.82rem;font-style:italic;margin-top:12px;border-top:1px solid #ddd;padding-top:10px">'+MSG_ALERGIAS+'</div></div>';
@@ -569,7 +576,7 @@ function menuText(){
   if(m.note)txt+=m.note+'\n';
   txt+='\n';
   m.groups.forEach(g=>{
-    const names=g.items.map(nameOf).filter(Boolean);
+    const names=g.items.map(platoConDesc).filter(Boolean);
     if(names.length)txt+=g.titulo.toUpperCase()+':\n  '+names.join('\n  ')+'\n\n';
   });
   txt+='PRECIO: '+eur(m.price);
@@ -604,12 +611,15 @@ function menuPDF(){
   if(m.note){doc.setFontSize(10);doc.setFont(undefined,'italic');doc.setTextColor(110,110,110);doc.text(m.note,105,y,{align:'center'});y+=8;}
   doc.setTextColor(40,40,40);
   m.groups.forEach(g=>{
-    const names=g.items.map(nameOf).filter(Boolean);
+    const names=g.items.map(platoConDesc).filter(Boolean);
     if(!names.length)return;
     if(y>265){doc.addPage();y=20;}
     doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(g.titulo.toUpperCase(),20,y);y+=7;
     doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
-    names.forEach(n=>{if(y>275){doc.addPage();y=20;}doc.text('•  '+n,26,y);y+=6;});y+=4;
+    names.forEach(n=>{
+      const lineas=doc.splitTextToSize('•  '+n,165);
+      lineas.forEach(ln=>{if(y>275){doc.addPage();y=20;}doc.text(ln,26,y);y+=6;});
+    });y+=4;
   });
   y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
   doc.text('PRECIO: '+eur(m.price),105,y,{align:'center'});y+=10;
