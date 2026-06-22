@@ -343,11 +343,11 @@ function renderDB(){
   Object.keys(SECS).forEach(s=>{
     const items=dishes.filter(d=>d.sec===s);
     if(!items.length)return;
-    html+='<div class="secblock"><h3>'+SECS[s]+'</h3><table><tbody>';
+    html+='<details class="grp-acc"><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
     items.forEach(d=>{
       html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="editDish('+d.id+')">✎</button> <button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
     });
-    html+='</tbody></table></div>';
+    html+='</tbody></table></div></details>';
   });
   c.innerHTML=html;
 }
