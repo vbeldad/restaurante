@@ -384,43 +384,22 @@ function loadMenu(){
 function renderGroups(){
   const c=document.getElementById('menuGroups');
   c.innerHTML=menuGroups.map((g,i)=>{
-    const secs=tipoSecs(g.tipo).filter(s=>dishes.some(d=>d.sec===s));
+    const items=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec));
     let list;
-    if(!secs.length){
+    if(!items.length){
       list='<span class="empty" style="padding:6px">No hay platos de este tipo en la base de datos</span>';
     }else{
-      list=secs.map(s=>{
-        const items=dishes.filter(d=>d.sec===s);
-        const marcados=items.filter(d=>g.items.includes(d.id)).length;
-        const badge=marcados?' <span class="cnt">'+marcados+'</span>':'';
-        const open=marcados?' open':'';
-        return '<details class="sec-acc"'+open+'><summary>'+SECS[s]+badge+'</summary>'+
-          '<div class="sec-items">'+items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('')+'</div></details>';
-      }).join('');
+      list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
     }
     return '<div class="menu-box" style="margin-bottom:12px">'+
       '<label>Apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
-      '<div style="margin-top:8px">'+list+'</div></div>';
+      '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div>';
   }).join('');
 }
 function setTitulo(i,v){menuGroups[i].titulo=v;}
 function toggleItem(i,id){
   const arr=menuGroups[i].items;const p=arr.indexOf(id);
   if(p>=0)arr.splice(p,1);else arr.push(id);
-  // actualizar solo el contador del summary sin recargar todo (mantiene secciones abiertas)
-  updateCounts();
-}
-function updateCounts(){
-  document.querySelectorAll('#menuGroups .menu-box').forEach((box,i)=>{
-    const g=menuGroups[i];if(!g)return;
-    box.querySelectorAll('details.sec-acc').forEach(det=>{
-      const sum=det.querySelector('summary');
-      const labels=[...det.querySelectorAll('input:checked')].length;
-      let cnt=sum.querySelector('.cnt');
-      if(labels){if(!cnt){cnt=document.createElement('span');cnt.className='cnt';sum.appendChild(document.createTextNode(' '));sum.appendChild(cnt);}cnt.textContent=labels;}
-      else if(cnt){cnt.remove();}
-    });
-  });
 }
 function saveMenu(){
   const t=document.getElementById('mType').value;
