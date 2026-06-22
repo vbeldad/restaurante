@@ -380,6 +380,11 @@ function loadMenu(){
     menuGroups=JSON.parse(JSON.stringify(m.groups));
     // migración: si un grupo viejo tenía 'sec' en vez de 'tipo'
     menuGroups.forEach(g=>{if(!g.tipo){g.tipo=POSTRE_SECS.includes(g.sec)?'postre':BEBIDA_SECS.includes(g.sec)?'bebida':'comida';}delete g.sec;});
+    // limpiar items: dejar solo IDs de platos que existen y son del tipo del apartado
+    menuGroups.forEach(g=>{
+      const validos=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)).map(d=>d.id);
+      g.items=(g.items||[]).filter(id=>validos.includes(id));
+    });
     document.getElementById('mPrice').value=m.price;
     document.getElementById('mNote').value=m.note||'';
   }else{
