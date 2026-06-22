@@ -64,6 +64,14 @@
   .sec-items label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
   .sec-items input{width:auto}
   .cnt{background:var(--accent);color:#fff;border-radius:20px;padding:1px 8px;font-size:.72rem;margin-left:auto;letter-spacing:0}
+  .grp-acc{background:var(--panel2);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  .grp-acc summary{cursor:pointer;padding:14px;font-weight:700;color:var(--accent);font-size:1rem;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .grp-acc summary::-webkit-details-marker{display:none}
+  .grp-acc summary::before{content:'▸';color:var(--muted);transition:.15s}
+  .grp-acc[open] summary::before{transform:rotate(90deg)}
+  .grp-acc[open] summary{border-bottom:1px solid var(--line)}
+  .grp-acc .grp-tit{color:var(--accent)}
+  .grp-body{padding:12px}
   .mesas-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
   .mesa-card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:.15s;text-align:center}
   .mesa-card:hover{border-color:var(--accent)}
@@ -391,15 +399,31 @@ function renderGroups(){
     }else{
       list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
     }
-    return '<div class="menu-box" style="margin-bottom:12px">'+
-      '<label>Apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
-      '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div>';
+    const n=g.items.length;
+    const badge=n?' <span class="cnt">'+n+'</span>':'';
+    // Abrir por defecto los que aún no tienen nada elegido; plegar los que ya tienen
+    const open=n?'':' open';
+    return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+'</summary>'+
+      '<div class="grp-body">'+
+      '<label>Nombre del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
+      '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div></details>';
   }).join('');
 }
-function setTitulo(i,v){menuGroups[i].titulo=v;}
+function setTitulo(i,v){menuGroups[i].titulo=v;renderGroups();}
 function toggleItem(i,id){
   const arr=menuGroups[i].items;const p=arr.indexOf(id);
   if(p>=0)arr.splice(p,1);else arr.push(id);
+  updateGroupCounts();
+}
+function updateGroupCounts(){
+  document.querySelectorAll('#menuGroups details.grp-acc').forEach((det,i)=>{
+    const g=menuGroups[i];if(!g)return;
+    const sum=det.querySelector('summary');
+    const n=g.items.length;
+    let cnt=sum.querySelector('.cnt');
+    if(n){if(!cnt){cnt=document.createElement('span');cnt.className='cnt';sum.appendChild(document.createTextNode(' '));sum.appendChild(cnt);}cnt.textContent=n;}
+    else if(cnt){cnt.remove();}
+  });
 }
 function saveMenu(){
   const t=document.getElementById('mType').value;
