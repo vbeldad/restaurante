@@ -90,10 +90,26 @@
   .preview .ml{margin:10px 0}
   .preview .ml b{color:#444}
   .preview .pr{text-align:center;font-size:1.6rem;font-weight:800;color:var(--accent);margin-top:14px}
+  #activacion{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+  .act-box{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:14px;padding:32px 26px;max-width:380px;width:100%;text-align:center}
+  .act-box .act-icon{font-size:2.4rem;margin-bottom:8px}
+  .act-box h2{color:var(--accent);border:none;justify-content:center;margin-bottom:10px}
+  .act-box p{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+  .act-box input{text-align:center;font-size:1.05rem;letter-spacing:1px}
   @media print{header,nav,.noprint{display:none!important}body{background:#fff}main{max-width:none}}
 </style>
 </head>
 <body>
+<div id="activacion" style="display:none">
+  <div class="act-box">
+    <div class="act-icon">🔒</div>
+    <h2>Activación</h2>
+    <p>Esta aplicación necesita un código de activación para usarse en este dispositivo. Introdúcelo una sola vez.</p>
+    <input id="actCode" type="text" placeholder="Código de activación" autocomplete="off" onkeydown="if(event.key==='Enter')comprobarCodigo()">
+    <button class="btn green" onclick="comprobarCodigo()" style="width:100%;margin-top:10px">Activar</button>
+    <div id="actError" style="color:var(--danger);font-size:.85rem;margin-top:10px;display:none">Código incorrecto. Inténtalo de nuevo.</div>
+  </div>
+</div>
 <header><h1>🍽️ Gestión de <span>Restaurante</span></h1></header>
 <nav>
   <button class="active" data-tab="mesas">🪑 Mesas</button>
@@ -161,6 +177,7 @@
           <option value="carnes">Carnes</option>
           <option value="pescados">Pescados</option>
           <option value="brasa">De la brasa al plato</option>
+          <option value="casa">Platos de la casa</option>
           <option value="vegetales">Vegetales</option>
           <option value="hamburguesas">Hamburguesas</option>
           <option value="bocadillos_calientes">Bocadillos calientes</option>
@@ -254,7 +271,27 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+// --- Activación por dispositivo ---
+const COD_OK='vbg08051963';
+function appActivada(){return localStorage.getItem('rest_activado')==='si';}
+function comprobarCodigo(){
+  const v=document.getElementById('actCode').value.trim().toLowerCase();
+  if(v===COD_OK){
+    localStorage.setItem('rest_activado','si');
+    document.getElementById('activacion').style.display='none';
+  }else{
+    document.getElementById('actError').style.display='block';
+    document.getElementById('actCode').value='';
+  }
+}
+if(!appActivada()){
+  // mostrar pantalla de activación en cuanto cargue el DOM
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('activacion').style.display='flex';
+    document.getElementById('actCode').focus();
+  });
+}
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
@@ -357,7 +394,7 @@ function renderDB(){
 let menuGroups=[]; // estado en edición
 
 // Secciones que entran en cada tipo de apartado
-const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
+const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
 const POSTRE_SECS=['postres'];
 const BEBIDA_SECS=['bebidas','refrescos','cervezas','sidras','vinos'];
 function tipoSecs(tipo){
@@ -442,6 +479,7 @@ function clearMenu(){
 }
 function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
 function menuTitle(t){return t==='semana'?'Menú del Día (Lunes a Viernes)':t==='finde'?'Menú de Fin de Semana':'Menú Infantil';}
+const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, por favor comunícalo a nuestro personal.';
 function renderMenuPreview(){
   const t=document.getElementById('mType').value;
   const m=menus[t];
@@ -453,7 +491,8 @@ function renderMenuPreview(){
     if(!g.items||!g.items.length)return;
     html+='<div class="ml"><b>'+g.titulo+':</b><br>'+g.items.map(nameOf).filter(Boolean).join(' · ')+'</div>';
   });
-  html+='<div class="pr">'+eur(m.price)+'</div></div>';
+  html+='<div class="pr">'+eur(m.price)+'</div>';
+  html+='<div style="text-align:center;color:#888;font-size:.82rem;font-style:italic;margin-top:12px;border-top:1px solid #ddd;padding-top:10px">'+MSG_ALERGIAS+'</div></div>';
   c.innerHTML=html;
 }
 
@@ -535,6 +574,7 @@ function menuText(){
   });
   txt+='PRECIO: '+eur(m.price);
   if(rest.phone)txt+='\n\nReservas: '+rest.phone;
+  txt+='\n\n'+MSG_ALERGIAS;
   return txt;
 }
 function copyMenu(){
@@ -573,7 +613,11 @@ function menuPDF(){
   });
   y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
   doc.text('PRECIO: '+eur(m.price),105,y,{align:'center'});y+=10;
-  if(rest.phone){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});}
+  if(rest.phone){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=8;}
+  else y+=4;
+  doc.setFontSize(9);doc.setFont(undefined,'italic');doc.setTextColor(130,130,130);
+  const lineas=doc.splitTextToSize(MSG_ALERGIAS,150);
+  doc.text(lineas,105,y,{align:'center'});
   doc.save('menu-'+document.getElementById('mType').value+'.pdf');
   toast('PDF generado ✔');
 }
