@@ -179,31 +179,7 @@
     <div class="row">
       <div style="flex:2"><label>Nombre</label><input id="pName" placeholder="Ej: Ensalada mixta"></div>
       <div><label>Sección</label>
-        <select id="pSec">
-          <option value="entrantes">Entrantes</option>
-          <option value="para_picar">Para picar</option>
-          <option value="tapas">Tapas</option>
-          <option value="primeros">Ensaladas</option>
-          <option value="segundos">Segundos</option>
-          <option value="carnes">Carnes</option>
-          <option value="pescados">Pescados</option>
-          <option value="brasa">De la brasa al plato</option>
-          <option value="casa">Platos de la casa</option>
-          <option value="tablas_ibericas">Tablas Ibéricas</option>
-          <option value="para_menus">Para Menús</option>
-          <option value="vegetales">Vegetales</option>
-          <option value="hamburguesas">Hamburguesas</option>
-          <option value="bocadillos_calientes">Bocadillos calientes</option>
-          <option value="bocadillos_frios">Bocadillos fríos</option>
-          <option value="bocadillos_especiales">Bocadillos especiales</option>
-          <option value="postres">Postres</option>
-          <option value="infantil">Infantil</option>
-          <option value="bebidas">Bebidas</option>
-          <option value="refrescos">Refrescos</option>
-          <option value="cervezas">Cervezas</option>
-          <option value="sidras">Sidras</option>
-          <option value="vinos">Vinos</option>
-        </select>
+        <select id="pSec"></select>
       </div>
       <div><label>Precio (€)</label><input id="pPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
     </div>
@@ -309,7 +285,9 @@ if(!appActivada()){
     document.getElementById('actCode').focus();
   });
 }
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",para_menus:"Para Menús",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",para_menus:"Para Menús",vegetales:"Bocadillos vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+// Claves de las secciones ordenadas alfabéticamente por su nombre
+function secKeys(){return Object.keys(SECS).sort((a,b)=>SECS[a].localeCompare(SECS[b],'es'));}
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
@@ -400,7 +378,7 @@ function renderDB(){
   const totalFiltrados=dishes.filter(coincide).length;
   let html='<h2>Platos guardados ('+(q?totalFiltrados+' de '+dishes.length:dishes.length)+')</h2>';
   if(q&&!totalFiltrados){c.innerHTML=html+'<div class="empty">No hay platos que coincidan con "'+q+'".</div>';return;}
-  Object.keys(SECS).forEach(s=>{
+  secKeys().forEach(s=>{
     const items=dishes.filter(d=>d.sec===s&&coincide(d));
     if(!items.length)return;
     const abrir=q?' open':''; // al buscar, abrir las secciones con resultados
@@ -538,7 +516,7 @@ let cartaSel=null; // secciones seleccionadas (Set de claves)
 let _cartaSeen=new Set();
 function buildCartaSecs(){
   // secciones que tienen al menos un plato
-  const conPlatos=Object.keys(SECS).filter(s=>dishes.some(d=>d.sec===s));
+  const conPlatos=secKeys().filter(s=>dishes.some(d=>d.sec===s));
   if(cartaSel===null)cartaSel=new Set(conPlatos); // por defecto todas marcadas
   else conPlatos.forEach(s=>{if(!_cartaSeen.has(s)){cartaSel.add(s);}}); // sección nueva => marcada
   _cartaSeen=new Set(conPlatos);
@@ -548,7 +526,7 @@ function buildCartaSecs(){
 }
 function toggleCartaSec(s){if(cartaSel.has(s))cartaSel.delete(s);else cartaSel.add(s);renderCarta();}
 function selectAllCarta(all){
-  const conPlatos=Object.keys(SECS).filter(s=>dishes.some(d=>d.sec===s));
+  const conPlatos=secKeys().filter(s=>dishes.some(d=>d.sec===s));
   cartaSel=all?new Set(conPlatos):new Set();
   buildCartaSecs();renderCarta();
 }
@@ -556,7 +534,7 @@ function renderCarta(){
   buildCartaSecs();
   const c=document.getElementById('cartaList');
   if(!dishes.length){c.innerHTML='<div class="empty">No hay platos.</div>';return;}
-  const secs=Object.keys(SECS).filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
   if(!secs.length){c.innerHTML='<div class="empty">No hay ninguna sección seleccionada.</div>';return;}
   let html='<div class="preview">'+(rest.name?'<h3>'+rest.name+'</h3>':'');
   secs.forEach(s=>{
@@ -568,7 +546,7 @@ function renderCarta(){
   c.innerHTML=html;
 }
 function cartaPDF(){
-  const secs=Object.keys(SECS).filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
   if(!secs.length){toast('Selecciona alguna sección');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
   let y=22;
@@ -854,7 +832,7 @@ function renderMesaAddList(){
     addHtml+='</div></details>';
   }
   // Platos por sección
-  Object.keys(SECS).forEach(s=>{
+  secKeys().forEach(s=>{
     const items=dishes.filter(d=>d.sec===s&&(coincide(d.name)||coincide(d.desc||'')));
     if(!items.length)return;
     const abrir=q?' open':'';
@@ -1068,6 +1046,8 @@ function cierrePDF(f){
 // Cargar datos del restaurante
 document.getElementById('rName').value=rest.name;
 document.getElementById('rPhone').value=rest.phone;
+// Rellenar el desplegable de secciones en orden alfabético
+document.getElementById('pSec').innerHTML=secKeys().map(s=>'<option value="'+s+'">'+SECS[s]+'</option>').join('');
 renderDB();renderMesas();
 </script>
 </body>
