@@ -150,6 +150,17 @@
         </select>
       </div>
     </div>
+    <details class="grp-acc noprint" style="margin-bottom:14px">
+      <summary><span class="grp-tit" style="color:var(--danger)">🗑️ Borrar historial</span></summary>
+      <div class="grp-body">
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Cuidado: lo que borres no se puede recuperar. Si quieres conservarlo, descarga antes una copia de seguridad.</p>
+        <div class="row" style="align-items:flex-end;margin-bottom:12px">
+          <div><label>Borrar lo anterior a esta fecha</label><input type="date" id="histFechaBorrar"></div>
+          <div style="flex:0"><button class="btn gray" onclick="borrarHistorialHasta()">Borrar lo anterior</button></div>
+        </div>
+        <button class="btn danger" onclick="borrarTodoHistorial()">Borrar TODO el historial</button>
+      </div>
+    </details>
     <div id="histContent"></div>
   </div>
 </div>
@@ -179,6 +190,7 @@
           <option value="brasa">De la brasa al plato</option>
           <option value="casa">Platos de la casa</option>
           <option value="tablas_ibericas">Tablas Ibéricas</option>
+          <option value="para_menus">Para Menús</option>
           <option value="vegetales">Vegetales</option>
           <option value="hamburguesas">Hamburguesas</option>
           <option value="bocadillos_calientes">Bocadillos calientes</option>
@@ -297,7 +309,7 @@ if(!appActivada()){
     document.getElementById('actCode').focus();
   });
 }
-const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",para_menus:"Para Menús",vegetales:"Vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
 let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
 let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
 // Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
@@ -406,7 +418,7 @@ function renderDB(){
 let menuGroups=[]; // estado en edición
 
 // Secciones que entran en cada tipo de apartado
-const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','tablas_ibericas','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
+const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','tablas_ibericas','para_menus','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
 const POSTRE_SECS=['postres'];
 const BEBIDA_SECS=['bebidas','refrescos','cervezas','sidras','vinos'];
 function tipoSecs(tipo){
@@ -1010,6 +1022,20 @@ function renderHistAgrupado(c,tipo){
 function borrarDia(f){
   if(!confirm('¿Borrar del historial todas las mesas del '+fechaLarga(f)+'? Esto no se puede deshacer.'))return;
   historial=historial.filter(h=>h.fecha!==f);save();renderHistorial();toast('Día borrado');
+}
+function borrarTodoHistorial(){
+  if(!historial.length){toast('El historial ya está vacío');return;}
+  if(!confirm('¿Borrar TODO el historial de servicios ('+historial.length+' mesas)? Esto no se puede deshacer.'))return;
+  if(!confirm('¿Seguro? Se perderá todo el historial de caja.'))return;
+  historial=[];save();renderHistorial();toast('Historial borrado');
+}
+function borrarHistorialHasta(){
+  const f=document.getElementById('histFechaBorrar').value;
+  if(!f){toast('Elige una fecha');return;}
+  const aBorrar=historial.filter(h=>h.fecha<f).length;
+  if(!aBorrar){toast('No hay nada anterior a esa fecha');return;}
+  if(!confirm('¿Borrar las '+aBorrar+' mesas anteriores al '+fechaLarga(f)+'? Esto no se puede deshacer.'))return;
+  historial=historial.filter(h=>h.fecha>=f);save();renderHistorial();toast('Historial antiguo borrado');
 }
 function cierrePDF(f){
   const filas=historial.filter(h=>h.fecha===f);
