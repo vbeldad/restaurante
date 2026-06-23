@@ -613,37 +613,67 @@ function menuPDF(){
   const {m,tit}=currentMenu();
   if(!m||!m.groups){toast('Guarda primero el menú');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
-  let y=22;
-  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
-  if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.text(rest.name,105,y,{align:'center'});y+=9;}
-  doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text(tit,105,y,{align:'center'});y+=4;
-  doc.setDrawColor(224,123,57);doc.line(60,y,150,y);y+=8;
-  if(m.note){doc.setFontSize(10);doc.setFont(undefined,'italic');doc.setTextColor(110,110,110);doc.text(m.note,105,y,{align:'center'});y+=8;}
-  doc.setTextColor(40,40,40);
+  const W=210,H=297;
+  // Paleta elegante
+  const CREMA=[250,247,240], DORADO=[176,141,87], MARRON=[74,58,42], GRIS=[120,110,98];
+  // Función de fondo y marco decorativo (se aplica a cada página)
+  function fondo(){
+    // fondo crema
+    doc.setFillColor(...CREMA);doc.rect(0,0,W,H,'F');
+    // marco doble dorado
+    doc.setDrawColor(...DORADO);
+    doc.setLineWidth(0.8);doc.rect(12,12,W-24,H-24);
+    doc.setLineWidth(0.3);doc.rect(15,15,W-30,H-30);
+    // adornos en las esquinas (pequeñas líneas en diagonal)
+    const esq=(x,y,dx,dy)=>{doc.setLineWidth(0.5);doc.line(x,y,x+dx,y);doc.line(x,y,x,y+dy);};
+    esq(15,15,10,10);esq(W-15,15,-10,10);esq(15,H-15,10,-10);esq(W-15,H-15,-10,-10);
+  }
+  fondo();
+  let y=34;
+  // pequeño adorno superior
+  doc.setDrawColor(...DORADO);doc.setLineWidth(0.4);
+  doc.line(70,y-6,140,y-6);
+  doc.setFillColor(...DORADO);doc.circle(105,y-6,1,'F');
+  if(rest.name){doc.setFontSize(24);doc.setFont('times','bold');doc.setTextColor(...MARRON);doc.text(rest.name,105,y,{align:'center'});y+=10;}
+  doc.setFontSize(15);doc.setFont('times','italic');doc.setTextColor(...DORADO);doc.text(tit,105,y,{align:'center'});y+=6;
+  // separador con rombo central
+  doc.setLineWidth(0.4);doc.setDrawColor(...DORADO);
+  doc.line(75,y,99,y);doc.line(111,y,135,y);
+  doc.setFillColor(...DORADO);
+  doc.triangle(105,y-2,102,y,108,y,'F');doc.triangle(105,y+2,102,y,108,y,'F');
+  y+=8;
+  if(m.note){doc.setFontSize(10);doc.setFont('times','italic');doc.setTextColor(...GRIS);doc.text(m.note,105,y,{align:'center'});y+=8;}
+
+  function nuevaPagina(){doc.addPage();fondo();y=34;}
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
     if(!ids.length)return;
-    if(y>265){doc.addPage();y=20;}
-    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(g.titulo.toUpperCase(),20,y);y+=7;
+    if(y>255)nuevaPagina();
+    doc.setFontSize(13);doc.setFont('times','bold');doc.setTextColor(...DORADO);
+    doc.text(g.titulo.toUpperCase(),105,y,{align:'center'});y+=2;
+    doc.setLineWidth(0.3);doc.setDrawColor(...DORADO);doc.line(85,y,125,y);y+=7;
     ids.forEach(id=>{
-      if(y>275){doc.addPage();y=20;}
-      doc.setFont(undefined,'bold');doc.setFontSize(11);doc.setTextColor(40,40,40);
-      doc.text('•  '+nameOf(id),26,y);y+=5;
+      if(y>270)nuevaPagina();
+      doc.setFont('times','bold');doc.setFontSize(12);doc.setTextColor(...MARRON);
+      doc.text(nameOf(id),105,y,{align:'center'});y+=5;
       const de=descOf(id);
       if(de){
-        doc.setFont(undefined,'italic');doc.setFontSize(9);doc.setTextColor(120,120,120);
-        const lineas=doc.splitTextToSize(de,150);
-        lineas.forEach(ln=>{if(y>278){doc.addPage();y=20;}doc.text(ln,31,y);y+=4.5;});
+        doc.setFont('times','italic');doc.setFontSize(9.5);doc.setTextColor(...GRIS);
+        const lineas=doc.splitTextToSize(de,140);
+        lineas.forEach(ln=>{if(y>278)nuevaPagina();doc.text(ln,105,y,{align:'center'});y+=4.5;});
       }
-      y+=1.5;
+      y+=3;
     });y+=4;
   });
-  y+=4;doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
-  doc.text('PRECIO: '+eur(m.price),105,y,{align:'center'});y+=10;
-  if(rest.phone){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=8;}
-  else y+=4;
-  doc.setFontSize(9);doc.setFont(undefined,'italic');doc.setTextColor(130,130,130);
-  const lineas=doc.splitTextToSize(MSG_ALERGIAS,150);
+  if(y>250)nuevaPagina();
+  y+=2;
+  // precio destacado en recuadro
+  doc.setDrawColor(...DORADO);doc.setLineWidth(0.5);
+  doc.setFontSize(17);doc.setFont('times','bold');doc.setTextColor(...MARRON);
+  doc.text('Precio: '+eur(m.price),105,y,{align:'center'});y+=10;
+  if(rest.phone){doc.setFontSize(10);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=7;}
+  doc.setFontSize(8.5);doc.setFont('times','italic');doc.setTextColor(...GRIS);
+  const lineas=doc.splitTextToSize(MSG_ALERGIAS,140);
   doc.text(lineas,105,y,{align:'center'});
   doc.save('menu-'+document.getElementById('mType').value+'.pdf');
   toast('PDF generado ✔');
