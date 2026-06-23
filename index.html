@@ -431,6 +431,9 @@ function loadMenu(){
     document.getElementById('mPrice').value='';
     document.getElementById('mNote').value='';
   }
+  // Vaciar el buscador y el contenedor para reiniciar el estado de apertura
+  const sb=document.getElementById('menuSearch');if(sb)sb.value='';
+  document.getElementById('menuGroups').innerHTML='';
   renderGroups();renderMenuPreview();
 }
 function renderGroups(){
@@ -438,6 +441,9 @@ function renderGroups(){
   const sEl=document.getElementById('menuSearch');
   const q=sEl?sEl.value.trim().toLowerCase():'';
   const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
+  // Recordar qué apartados están abiertos ahora mismo, para no cerrarlos al filtrar
+  const abiertos=[...c.querySelectorAll('details.grp-acc')].map(d=>d.open);
+  const primeraVez=abiertos.length===0;
   c.innerHTML=menuGroups.map((g,i)=>{
     // mostrar los que coincidan con la búsqueda + los que ya estén marcados
     const items=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)&&(coincide(d)||g.items.includes(d.id)));
@@ -449,8 +455,10 @@ function renderGroups(){
     }
     const n=g.items.length;
     const badge=n?' <span class="cnt">'+n+'</span>':'';
-    // Al buscar, abrir todos; si no, abrir los vacíos y plegar los que ya tienen
-    const open=q?' open':(n?'':' open');
+    // Mantener abierto lo que el usuario tenía abierto. La primera vez, abrir solo los vacíos.
+    let open;
+    if(primeraVez)open=(n?'':' open');
+    else open=abiertos[i]?' open':'';
     return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+'</summary>'+
       '<div class="grp-body">'+
       '<label>Nombre del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
