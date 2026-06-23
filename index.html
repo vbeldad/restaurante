@@ -215,15 +215,16 @@
           <option value="infantil">Menú infantil</option>
         </select>
       </div>
-      <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
+      <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00" oninput="renderMenuPreview()"></div>
     </div>
     <div class="row mt">
-      <div style="flex:2"><label>Anotación / fecha (opcional)</label><input id="mNote" placeholder="Ej: Semana del 23 al 27 de junio"></div>
+      <div style="flex:2"><label>Anotación / fecha (opcional)</label><input id="mNote" placeholder="Ej: Semana del 23 al 27 de junio" oninput="renderMenuPreview()"></div>
     </div>
     <h3 style="margin-top:18px">Apartados del menú</h3>
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado, marca los platos que se ofrecen. Usa el buscador para encontrarlos rápido.</p>
     <input id="menuSearch" placeholder="🔍 Buscar plato..." oninput="renderGroups()" autocomplete="off" style="margin-bottom:12px">
     <div id="menuGroups"></div>
+    <button class="btn gray sm" onclick="addGrupoExtra()" style="margin-top:4px">+ Añadir apartado especial (evento, celebración...)</button>
     <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
     <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
   </div>
@@ -459,17 +460,33 @@ function renderGroups(){
     let open;
     if(primeraVez)open=(n?'':' open');
     else open=abiertos[i]?' open':'';
-    return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+'</summary>'+
-      '<div class="grp-body">'+
-      '<label>Nombre del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
+    // Los apartados extra (eventos especiales) tienen nombre editable y botón de borrar
+    let cabecera='';
+    if(g.extra){
+      cabecera='<div class="row" style="align-items:flex-end;margin-bottom:8px"><div style="flex:2"><label>Nombre del apartado especial</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" placeholder="Ej: Especial San Valentín" onchange="setTitulo('+i+',this.value)"></div><div style="flex:0"><button class="btn danger sm" onclick="borrarGrupo('+i+')">Quitar</button></div></div>';
+    }
+    return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+(g.extra?' <span class="pill" style="margin-left:8px">especial</span>':'')+'</summary>'+
+      '<div class="grp-body">'+cabecera+
       '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div></details>';
   }).join('');
 }
-function setTitulo(i,v){menuGroups[i].titulo=v;renderGroups();}
+function setTitulo(i,v){if(menuGroups[i]){menuGroups[i].titulo=v;renderMenuPreview();}}
+function borrarGrupo(i){
+  if(menuGroups[i]&&!confirm('¿Quitar el apartado "'+(menuGroups[i].titulo||'')+'"?'))return;
+  menuGroups.splice(i,1);renderGroups();renderMenuPreview();
+}
+function addGrupoExtra(){
+  menuGroups.push({titulo:'',tipo:'comida',items:[],extra:true});
+  renderGroups();
+  // abrir el nuevo y enfocar su nombre
+  const dets=document.querySelectorAll('#menuGroups details.grp-acc');
+  const ultimo=dets[dets.length-1];
+  if(ultimo){ultimo.open=true;const inp=ultimo.querySelector('input[type=text]')||ultimo.querySelector('input');if(inp)inp.focus();}
+}
 function toggleItem(i,id){
   const arr=menuGroups[i].items;const p=arr.indexOf(id);
   if(p>=0)arr.splice(p,1);else arr.push(id);
-  updateGroupCounts();
+  updateGroupCounts();renderMenuPreview();
 }
 function updateGroupCounts(){
   document.querySelectorAll('#menuGroups details.grp-acc').forEach((det,i)=>{
@@ -498,14 +515,22 @@ function menuTitle(t){return t==='semana'?'Menú del Día (Lunes a Viernes)':t==
 const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, por favor comunícalo a nuestro personal.';
 function renderMenuPreview(){
   const t=document.getElementById('mType').value;
-  const m=menus[t];
   const c=document.getElementById('menuPreview');
-  if(!m||!m.groups){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
+  // Usar lo que se está editando en vivo (menuGroups) en lugar del guardado
+  const groups=menuGroups&&menuGroups.length?menuGroups:(menus[t]&&menus[t].groups);
+  if(!groups){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
+  const precio=parseFloat(document.getElementById('mPrice').value)||0;
+  const nota=document.getElementById('mNote').value.trim();
+  const m={price:precio,note:nota,groups:groups};
   let html='<div class="preview"><h3>'+menuTitle(t)+'</h3>';
   if(m.note)html+='<div style="text-align:center;color:#666;margin-bottom:8px">'+m.note+'</div>';
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
-    if(!ids.length)return;
+    if(!ids.length){
+      // Un apartado especial con título pero sin platos se muestra como anuncio
+      if(g.extra&&g.titulo){html+='<div class="ml" style="text-align:center;color:var(--accent);font-weight:700;margin:10px 0">'+g.titulo+'</div>';}
+      return;
+    }
     html+='<div class="ml"><b style="color:var(--accent)">'+g.titulo+'</b>';
     ids.forEach(id=>{
       const de=descOf(id);
@@ -593,7 +618,10 @@ function menuText(){
   txt+='\n';
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
-    if(!ids.length)return;
+    if(!ids.length){
+      if(g.extra&&g.titulo)txt+='** '+g.titulo+' **\n\n';
+      return;
+    }
     txt+=g.titulo.toUpperCase()+':\n';
     ids.forEach(id=>{
       txt+='  '+nameOf(id)+'\n';
@@ -687,7 +715,16 @@ function menuPDF(){
   function nuevaPagina(){doc.addPage();fondo();y=34;}
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
-    if(!ids.length)return;
+    if(!ids.length){
+      if(g.extra&&g.titulo){
+        if(y>265)nuevaPagina();
+        doc.setFontSize(13);doc.setFont('times','bolditalic');doc.setTextColor(...DORADO);
+        const ls=doc.splitTextToSize(g.titulo,150);
+        ls.forEach(ln=>{if(y>275)nuevaPagina();doc.text(ln,105,y,{align:'center'});y+=6;});
+        y+=4;
+      }
+      return;
+    }
     if(y>255)nuevaPagina();
     doc.setFontSize(13);doc.setFont('times','bold');doc.setTextColor(...DORADO);
     doc.text(g.titulo.toUpperCase(),105,y,{align:'center'});y+=2;
