@@ -199,6 +199,10 @@
     <div class="mt"><button class="btn green" id="btnDish" onclick="addDish()">+ Añadir a la base de datos</button>
     <button class="btn gray" id="btnCancelDish" onclick="cancelEditDish()" style="display:none">Cancelar</button></div>
   </div>
+  <div class="card noprint" style="padding-bottom:14px">
+    <label>🔍 Buscar plato</label>
+    <input id="dbSearch" placeholder="Escribe para buscar..." oninput="renderDB()" autocomplete="off">
+  </div>
   <div class="card" id="dbList"></div>
   <div class="card">
     <h2>💾 Copia de seguridad</h2>
@@ -229,7 +233,8 @@
       <div style="flex:2"><label>Anotación / fecha (opcional)</label><input id="mNote" placeholder="Ej: Semana del 23 al 27 de junio"></div>
     </div>
     <h3 style="margin-top:18px">Apartados del menú</h3>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado elige la sección en el desplegable y marca los platos que se ofrecen.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado, marca los platos que se ofrecen. Usa el buscador para encontrarlos rápido.</p>
+    <input id="menuSearch" placeholder="🔍 Buscar plato..." oninput="renderGroups()" autocomplete="off" style="margin-bottom:12px">
     <div id="menuGroups"></div>
     <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
     <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
@@ -377,11 +382,17 @@ function delDish(id){if(!confirm('¿Eliminar este plato?'))return;dishes=dishes.
 function renderDB(){
   const c=document.getElementById('dbList');
   if(!dishes.length){c.innerHTML='<h2>Platos guardados</h2><div class="empty">Aún no hay platos. Añade el primero arriba.</div>';return;}
-  let html='<h2>Platos guardados ('+dishes.length+')</h2>';
+  const sEl=document.getElementById('dbSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
+  const totalFiltrados=dishes.filter(coincide).length;
+  let html='<h2>Platos guardados ('+(q?totalFiltrados+' de '+dishes.length:dishes.length)+')</h2>';
+  if(q&&!totalFiltrados){c.innerHTML=html+'<div class="empty">No hay platos que coincidan con "'+q+'".</div>';return;}
   Object.keys(SECS).forEach(s=>{
-    const items=dishes.filter(d=>d.sec===s);
+    const items=dishes.filter(d=>d.sec===s&&coincide(d));
     if(!items.length)return;
-    html+='<details class="grp-acc"><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
+    const abrir=q?' open':''; // al buscar, abrir las secciones con resultados
+    html+='<details class="grp-acc"'+abrir+'><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
     items.forEach(d=>{
       html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="editDish('+d.id+')">✎</button> <button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
     });
@@ -434,18 +445,22 @@ function loadMenu(){
 }
 function renderGroups(){
   const c=document.getElementById('menuGroups');
+  const sEl=document.getElementById('menuSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
   c.innerHTML=menuGroups.map((g,i)=>{
-    const items=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec));
+    // mostrar los que coincidan con la búsqueda + los que ya estén marcados
+    const items=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)&&(coincide(d)||g.items.includes(d.id)));
     let list;
     if(!items.length){
-      list='<span class="empty" style="padding:6px">No hay platos de este tipo en la base de datos</span>';
+      list='<span class="empty" style="padding:6px">'+(q?'Ningún plato coincide con la búsqueda':'No hay platos de este tipo en la base de datos')+'</span>';
     }else{
       list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+(d.desc?' <span style="color:var(--muted);font-size:.82rem">— '+d.desc+'</span>':'')+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
     }
     const n=g.items.length;
     const badge=n?' <span class="cnt">'+n+'</span>':'';
-    // Abrir por defecto los que aún no tienen nada elegido; plegar los que ya tienen
-    const open=n?'':' open';
+    // Al buscar, abrir todos; si no, abrir los vacíos y plegar los que ya tienen
+    const open=q?' open':(n?'':' open');
     return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+'</summary>'+
       '<div class="grp-body">'+
       '<label>Nombre del apartado</label><input value="'+(g.titulo||'').replace(/"/g,'&quot;')+'" onchange="setTitulo('+i+',this.value)">'+
@@ -776,29 +791,6 @@ function renderDetalle(){
   const m=mesas.find(x=>x.id===mesaActivaId);
   if(!m){renderMesas();return;}
   const cont=document.getElementById('mesaDetalle');
-  // Selector de cosas para añadir: menús + platos por sección
-  let addHtml='';
-  // Menús de precio fijo
-  const tiposMenu=[['semana','Menú del Día'],['finde','Menú Fin de Semana'],['infantil','Menú Infantil']];
-  let menusDisp=tiposMenu.filter(([k])=>menus[k]&&menus[k].price>0);
-  if(menusDisp.length){
-    addHtml+='<details class="sec-acc" open><summary>Menús</summary><div class="sec-items" style="padding:0">';
-    menusDisp.forEach(([k,nom])=>{
-      addHtml+='<div class="add-row"><span>'+nom+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(menus[k].price)+'</span><button class="btn green sm" onclick="addItem(\'menu\',\''+k+'\')">+</button></span></div>';
-    });
-    addHtml+='</div></details>';
-  }
-  // Platos por sección
-  Object.keys(SECS).forEach(s=>{
-    const items=dishes.filter(d=>d.sec===s);
-    if(!items.length)return;
-    addHtml+='<details class="sec-acc"><summary>'+SECS[s]+'</summary><div class="sec-items" style="padding:0">';
-    items.forEach(d=>{
-      addHtml+='<div class="add-row"><span>'+d.name+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(d.price)+'</span><button class="btn green sm" onclick="addItem(\'plato\','+d.id+')">+</button></span></div>';
-    });
-    addHtml+='</div></details>';
-  });
-  if(!addHtml)addHtml='<div class="empty">No hay platos ni menús. Añádelos en sus pestañas.</div>';
 
   // Ticket / cuenta
   let ticket='';
@@ -819,7 +811,9 @@ function renderDetalle(){
   cont.innerHTML=
     '<div class="card noprint"><button class="btn gray sm" onclick="renderMesas()">← Volver a mesas</button>'+
     '<h2 style="margin-top:12px">🪑 '+m.nombre+'</h2>'+
-    '<h3>Añadir a la cuenta</h3>'+addHtml+
+    '<h3>Añadir a la cuenta</h3>'+
+    '<input id="mesaSearch" placeholder="🔍 Buscar plato..." oninput="renderMesaAddList()" autocomplete="off" style="margin-bottom:12px">'+
+    '<div id="mesaAddList"></div>'+
     '</div>'+
     '<div class="card"><h2>Cuenta</h2><div id="ticketBox">'+ticket+'</div>'+
     '<div class="total-box"><div style="color:var(--muted);font-size:.85rem">TOTAL</div><div class="num">'+eur(total)+'</div></div>'+
@@ -828,6 +822,38 @@ function renderDetalle(){
     '<button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>'+
     '<button class="btn danger sm" onclick="cerrarMesa()">✓ Cobrar y cerrar mesa</button>'+
     '</div></div>';
+  renderMesaAddList();
+}
+function renderMesaAddList(){
+  const cont=document.getElementById('mesaAddList');
+  if(!cont)return;
+  const sEl=document.getElementById('mesaSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=txt=>!q||txt.toLowerCase().includes(q);
+  let addHtml='';
+  // Menús de precio fijo (se ocultan si hay búsqueda que no coincide con su nombre)
+  const tiposMenu=[['semana','Menú del Día'],['finde','Menú Fin de Semana'],['infantil','Menú Infantil']];
+  let menusDisp=tiposMenu.filter(([k,nom])=>menus[k]&&menus[k].price>0&&coincide(nom));
+  if(menusDisp.length){
+    addHtml+='<details class="sec-acc" open><summary>Menús</summary><div class="sec-items" style="padding:0">';
+    menusDisp.forEach(([k,nom])=>{
+      addHtml+='<div class="add-row"><span>'+nom+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(menus[k].price)+'</span><button class="btn green sm" onclick="addItem(\'menu\',\''+k+'\')">+</button></span></div>';
+    });
+    addHtml+='</div></details>';
+  }
+  // Platos por sección
+  Object.keys(SECS).forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s&&(coincide(d.name)||coincide(d.desc||'')));
+    if(!items.length)return;
+    const abrir=q?' open':'';
+    addHtml+='<details class="sec-acc"'+abrir+'><summary>'+SECS[s]+' <span class="cnt">'+items.length+'</span></summary><div class="sec-items" style="padding:0">';
+    items.forEach(d=>{
+      addHtml+='<div class="add-row"><span>'+d.name+(d.desc?' <span style="color:var(--muted);font-size:.8rem">— '+d.desc+'</span>':'')+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(d.price)+'</span><button class="btn green sm" onclick="addItem(\'plato\','+d.id+')">+</button></span></div>';
+    });
+    addHtml+='</div></details>';
+  });
+  if(!addHtml)addHtml='<div class="empty">'+(q?'Ningún plato coincide con la búsqueda.':'No hay platos ni menús. Añádelos en sus pestañas.')+'</div>';
+  cont.innerHTML=addHtml;
 }
 function addItem(tipo,ref){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
@@ -838,13 +864,34 @@ function addItem(tipo,ref){
   const ex=m.items.find(it=>it.tipo===tipo&&it.ref===ref);
   if(ex)ex.qty++;
   else m.items.push({tipo,ref,name,price,qty:1});
-  save();renderDetalle();
+  save();actualizarTicket();
 }
 function cambiaQty(idx,delta){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
   m.items[idx].qty+=delta;
   if(m.items[idx].qty<=0)m.items.splice(idx,1);
-  save();renderDetalle();
+  save();actualizarTicket();
+}
+function actualizarTicket(){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  const tb=document.getElementById('ticketBox');
+  if(!tb){renderDetalle();return;}
+  let ticket='';
+  if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
+  else{
+    m.items.forEach((it,idx)=>{
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+'</span>'+
+        '<span style="display:flex;align-items:center;gap:6px">'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
+        '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',1)">+</button>'+
+        '<span class="ap" style="min-width:70px;text-align:right">'+eur(it.price*it.qty)+'</span>'+
+        '</span></div>';
+    });
+  }
+  tb.innerHTML=ticket;
+  const numEl=document.querySelector('#mesaDetalle .total-box .num');
+  if(numEl)numEl.textContent=eur(mesaTotal(m));
 }
 function cerrarMesa(){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
