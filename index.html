@@ -617,9 +617,36 @@ function menuPDF(){
   // Paleta elegante
   const CREMA=[250,247,240], DORADO=[176,141,87], MARRON=[74,58,42], GRIS=[120,110,98];
   // Función de fondo y marco decorativo (se aplica a cada página)
+  function marcaAgua(){
+    const cx=105, cy=170, sc=2.1;
+    doc.setDrawColor(228,219,202);doc.setLineWidth(0.7);
+    // copa de vino
+    const r=9*sc, cuy=cy-9*sc;
+    let pts=[];for(let a=-25;a<=205;a+=10){const rad=Math.PI*a/180;pts.push([cx-r*Math.cos(rad), cuy+r*Math.sin(rad)]);}
+    for(let i=0;i<pts.length-1;i++)doc.line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);
+    const bowlBot=cuy+r;
+    doc.line(cx,bowlBot, cx,cy+12*sc);
+    doc.line(cx-7*sc,cy+12*sc, cx+7*sc,cy+12*sc);
+    // tenedor
+    const fx=cx-32*sc, ftop=cy-17*sc;
+    for(let i=-1;i<=1;i++)doc.line(fx+i*2.2*sc,ftop, fx+i*2.2*sc,ftop+6*sc);
+    let fp=[];for(let a=0;a<=180;a+=20){const rad=Math.PI*a/180;fp.push([fx-2.2*sc*Math.cos(rad), ftop+6*sc+1.5*sc*Math.sin(rad)]);}
+    for(let i=0;i<fp.length-1;i++)doc.line(fp[i][0],fp[i][1],fp[i+1][0],fp[i+1][1]);
+    doc.line(fx,ftop+7.5*sc, fx,cy+16*sc);
+    // cuchillo
+    const kx=cx+32*sc, ktop=cy-17*sc, filoX=kx-1.4*sc;
+    doc.line(filoX,ktop+1*sc, filoX,ktop+12*sc);
+    doc.line(filoX,ktop+1*sc, kx+2*sc,ktop+6*sc);
+    doc.line(kx+2*sc,ktop+6*sc, filoX,ktop+12*sc);
+    doc.line(filoX,ktop+12*sc, filoX,cy+16*sc);
+    doc.line(filoX,cy+16*sc, kx+1*sc,cy+16*sc);
+    doc.line(kx+1*sc,ktop+12*sc, kx+1*sc,cy+16*sc);
+  }
   function fondo(){
     // fondo crema
     doc.setFillColor(...CREMA);doc.rect(0,0,W,H,'F');
+    // marca de agua tenue
+    marcaAgua();
     // marco doble dorado
     doc.setDrawColor(...DORADO);
     doc.setLineWidth(0.8);doc.rect(12,12,W-24,H-24);
