@@ -803,6 +803,12 @@ function abrirMesa(){
   abrirDetalle(m.id);
 }
 function mesaTotal(m){return m.items.reduce((s,it)=>s+it.price*it.qty,0);}
+function descItem(it){
+  // Usar la descripción guardada; si no la tiene (items antiguos), buscarla en la base de datos
+  if(it.desc)return it.desc;
+  if(it.tipo==='plato'){const d=dishes.find(x=>x.id===it.ref);if(d&&d.desc)return d.desc;}
+  return '';
+}
 function renderMesas(){
   mesaActivaId=null;
   document.getElementById('mesaDetalle').style.display='none';
@@ -835,7 +841,7 @@ function renderDetalle(){
   if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
   else{
     m.items.forEach((it,idx)=>{
-      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(it.desc?'<br><span style="color:var(--muted);font-size:.78rem">'+it.desc+'</span>':'')+'</span>'+
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(descItem(it)?'<br><span style="color:var(--muted);font-size:.78rem">'+descItem(it)+'</span>':'')+'</span>'+
         '<span style="display:flex;align-items:center;gap:6px">'+
         '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
         '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
@@ -926,7 +932,7 @@ function actualizarTicket(){
   if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
   else{
     m.items.forEach((it,idx)=>{
-      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(it.desc?'<br><span style="color:var(--muted);font-size:.78rem">'+it.desc+'</span>':'')+'</span>'+
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(descItem(it)?'<br><span style="color:var(--muted);font-size:.78rem">'+descItem(it)+'</span>':'')+'</span>'+
         '<span style="display:flex;align-items:center;gap:6px">'+
         '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
         '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
@@ -968,9 +974,10 @@ function mesaPDF(){
     doc.text((it.qty+'x '+it.name).substring(0,32),6,y);
     doc.text(eur(it.price*it.qty),W-6,y,{align:'right'});
     y+=5;
-    if(it.desc){
+    const de=descItem(it);
+    if(de){
       doc.setFontSize(7);doc.setTextColor(120,120,120);
-      const ls=doc.splitTextToSize(it.desc,W-16);
+      const ls=doc.splitTextToSize(de,W-16);
       ls.forEach(ln=>{doc.text(ln,9,y);y+=3.5;});
       doc.setFontSize(9);doc.setTextColor(0,0,0);
       y+=1;
