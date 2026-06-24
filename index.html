@@ -429,20 +429,25 @@ const DEFAULT_GROUPS={
 function loadMenu(){
   const t=document.getElementById('mType').value;
   const m=menus[t];
+  // Siempre partimos de los 4 apartados fijos correctos
+  menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));
   if(m&&m.groups){
-    menuGroups=JSON.parse(JSON.stringify(m.groups));
-    // migración: si un grupo viejo tenía 'sec' en vez de 'tipo'
-    menuGroups.forEach(g=>{if(!g.tipo){g.tipo=POSTRE_SECS.includes(g.sec)?'postre':BEBIDA_SECS.includes(g.sec)?'bebida':'comida';}delete g.sec;});
-    // limpiar items: dejar solo IDs de platos que existen y son del tipo del apartado
+    // Recuperar los platos marcados que tenga guardados, repartiéndolos por tipo
+    const marcadosPorTipo={comida:[],postre:[],bebida:[]};
+    m.groups.forEach(g=>{
+      let tipo=g.tipo;
+      if(!tipo){tipo=POSTRE_SECS.includes(g.sec)?'postre':BEBIDA_SECS.includes(g.sec)?'bebida':'comida';}
+      (g.items||[]).forEach(id=>{if(marcadosPorTipo[tipo]&&!marcadosPorTipo[tipo].includes(id))marcadosPorTipo[tipo].push(id);});
+    });
+    // Asignar a cada apartado fijo los platos válidos de su tipo
     menuGroups.forEach(g=>{
       const validos=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)).map(d=>d.id);
-      g.items=(g.items||[]).filter(id=>validos.includes(id));
+      g.items=(marcadosPorTipo[g.tipo]||[]).filter(id=>validos.includes(id));
     });
     document.getElementById('mPrice').value=m.price;
     document.getElementById('mNote').value=m.note||'';
     document.getElementById('mFoot').value=m.foot||'';
   }else{
-    menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));
     document.getElementById('mPrice').value='';
     document.getElementById('mNote').value='';
     document.getElementById('mFoot').value='';
@@ -479,6 +484,12 @@ function renderGroups(){
       '<div class="grp-body">'+
       '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div></details>';
   }).join('');
+  // Solo una sección abierta a la vez (igual que en base de datos)
+  c.querySelectorAll('details.grp-acc').forEach(det=>{
+    det.addEventListener('toggle',()=>{
+      if(det.open)c.querySelectorAll('details.grp-acc').forEach(o=>{if(o!==det)o.open=false;});
+    });
+  });
 }
 function toggleItem(i,id){
   const arr=menuGroups[i].items;const p=arr.indexOf(id);
@@ -824,7 +835,7 @@ function renderDetalle(){
   if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
   else{
     m.items.forEach((it,idx)=>{
-      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+'</span>'+
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(it.desc?'<br><span style="color:var(--muted);font-size:.78rem">'+it.desc+'</span>':'')+'</span>'+
         '<span style="display:flex;align-items:center;gap:6px">'+
         '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
         '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
@@ -892,13 +903,13 @@ function renderMesaAddList(){
 }
 function addItem(tipo,ref){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
-  let name,price;
+  let name,price,desc='';
   if(tipo==='menu'){const mn={semana:'Menú del Día',finde:'Menú Fin de Semana',infantil:'Menú Infantil'};name=mn[ref];price=menus[ref].price;}
-  else{const d=dishes.find(x=>x.id===ref);if(!d)return;name=d.name;price=d.price;}
+  else{const d=dishes.find(x=>x.id===ref);if(!d)return;name=d.name;price=d.price;desc=d.desc||'';}
   // si ya existe la misma línea, sumar cantidad
   const ex=m.items.find(it=>it.tipo===tipo&&it.ref===ref);
   if(ex)ex.qty++;
-  else m.items.push({tipo,ref,name,price,qty:1});
+  else m.items.push({tipo,ref,name,price,qty:1,desc});
   save();actualizarTicket();
 }
 function cambiaQty(idx,delta){
@@ -915,7 +926,7 @@ function actualizarTicket(){
   if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
   else{
     m.items.forEach((it,idx)=>{
-      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+'</span>'+
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(it.desc?'<br><span style="color:var(--muted);font-size:.78rem">'+it.desc+'</span>':'')+'</span>'+
         '<span style="display:flex;align-items:center;gap:6px">'+
         '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
         '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
@@ -945,7 +956,7 @@ function cerrarMesa(){
 function mesaPDF(){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
   if(!m.items.length){toast('La mesa está vacía');return;}
-  const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*8],unit:'mm'});
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*16],unit:'mm'});
   let y=10;const W=80;
   if(rest.name){doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(rest.name,W/2,y,{align:'center'});y+=6;}
   if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=5;}
@@ -957,6 +968,13 @@ function mesaPDF(){
     doc.text((it.qty+'x '+it.name).substring(0,32),6,y);
     doc.text(eur(it.price*it.qty),W-6,y,{align:'right'});
     y+=5;
+    if(it.desc){
+      doc.setFontSize(7);doc.setTextColor(120,120,120);
+      const ls=doc.splitTextToSize(it.desc,W-16);
+      ls.forEach(ln=>{doc.text(ln,9,y);y+=3.5;});
+      doc.setFontSize(9);doc.setTextColor(0,0,0);
+      y+=1;
+    }
   });
   y+=2;doc.setLineDashPattern([1,1],0);doc.line(6,y,W-6,y);y+=7;
   doc.setFontSize(13);doc.setFont(undefined,'bold');
