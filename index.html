@@ -395,6 +395,14 @@ function renderDB(){
     html+='</tbody></table></div></details>';
   });
   c.innerHTML=html;
+  // Solo una sección abierta a la vez: al abrir una, cerrar las demás
+  c.querySelectorAll('details.grp-acc').forEach(det=>{
+    det.addEventListener('toggle',()=>{
+      if(det.open){
+        c.querySelectorAll('details.grp-acc').forEach(otra=>{if(otra!==det)otra.open=false;});
+      }
+    });
+  });
 }
 
 // --- Menús (apartados fijos, selección libre de platos por tipo) ---
