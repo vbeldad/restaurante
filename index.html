@@ -378,14 +378,17 @@ function renderDB(){
   const sEl=document.getElementById('dbSearch');
   const q=sEl?sEl.value.trim().toLowerCase():'';
   const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
+  // Recordar qué secciones tiene abiertas el usuario (por su clave), para no cerrarlas al reconstruir
+  const abiertas=new Set([...c.querySelectorAll('details.grp-acc[open]')].map(d=>d.dataset.sec));
   const totalFiltrados=dishes.filter(coincide).length;
   let html='<h2>Platos guardados ('+(q?totalFiltrados+' de '+dishes.length:dishes.length)+')</h2>';
   if(q&&!totalFiltrados){c.innerHTML=html+'<div class="empty">No hay platos que coincidan con "'+q+'".</div>';return;}
   secKeys().forEach(s=>{
     const items=dishes.filter(d=>d.sec===s&&coincide(d));
     if(!items.length)return;
-    const abrir=q?' open':''; // al buscar, abrir las secciones con resultados
-    html+='<details class="grp-acc"'+abrir+'><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
+    // Abrir si: el usuario la tenía abierta, o hay una búsqueda activa con resultados
+    const abrir=(abiertas.has(s)||q)?' open':'';
+    html+='<details class="grp-acc" data-sec="'+s+'"'+abrir+'><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
     items.forEach(d=>{
       html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="editDish('+d.id+')">✎</button> <button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
     });
