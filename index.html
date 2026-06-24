@@ -800,6 +800,7 @@ function renderMesas(){
 }
 function abrirDetalle(id){
   mesaActivaId=id;
+  mesaMostrarTodo=false;
   document.getElementById('mesasLista').style.display='none';
   const cont=document.getElementById('mesaDetalle');
   cont.style.display='block';
@@ -842,13 +843,21 @@ function renderDetalle(){
     '</div></div>';
   renderMesaAddList();
 }
+let mesaMostrarTodo=false; // si true, se muestran todas las secciones aunque no haya búsqueda
+function toggleMesaSecciones(){mesaMostrarTodo=!mesaMostrarTodo;renderMesaAddList();}
 function renderMesaAddList(){
   const cont=document.getElementById('mesaAddList');
   if(!cont)return;
   const sEl=document.getElementById('mesaSearch');
   const q=sEl?sEl.value.trim().toLowerCase():'';
   const coincide=txt=>!q||txt.toLowerCase().includes(q);
-  let addHtml='';
+  // Botón para mostrar/ocultar todas las secciones
+  let addHtml='<div style="margin-bottom:10px"><button class="btn gray sm" onclick="toggleMesaSecciones()">'+(mesaMostrarTodo?'▲ Ocultar secciones':'▼ Mostrar todas las secciones')+'</button></div>';
+  // Si no hay búsqueda y no se han pedido mostrar, solo el buscador + botón
+  if(!q&&!mesaMostrarTodo){
+    addHtml+='<div class="empty" style="padding:10px">Escribe en el buscador para encontrar un plato, o pulsa "Mostrar todas las secciones".</div>';
+    cont.innerHTML=addHtml;return;
+  }
   // Menús de precio fijo (se ocultan si hay búsqueda que no coincide con su nombre)
   const tiposMenu=[['semana','Menú del Día'],['finde','Menú Fin de Semana'],['infantil','Menú Infantil']];
   let menusDisp=tiposMenu.filter(([k,nom])=>menus[k]&&menus[k].price>0&&coincide(nom));
@@ -870,7 +879,7 @@ function renderMesaAddList(){
     });
     addHtml+='</div></details>';
   });
-  if(!addHtml)addHtml='<div class="empty">'+(q?'Ningún plato coincide con la búsqueda.':'No hay platos ni menús. Añádelos en sus pestañas.')+'</div>';
+  if(addHtml.indexOf('add-row')<0)addHtml+='<div class="empty">'+(q?'Ningún plato coincide con la búsqueda.':'No hay platos ni menús. Añádelos en sus pestañas.')+'</div>';
   cont.innerHTML=addHtml;
 }
 function addItem(tipo,ref){
