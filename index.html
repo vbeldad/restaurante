@@ -963,7 +963,10 @@ function mesaPDF(){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
   if(!m.items.length){toast('La mesa está vacía');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*16],unit:'mm'});
-  let y=10;const W=80;
+const img = new Image();
+   img.src = 'logo.png.png';
+   doc.addImage(img, 'PNG', 10, 5, 60, 30);
+  let y=40;const W=80;
   if(rest.name){doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(rest.name,W/2,y,{align:'center'});y+=6;}
   if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=5;}
   doc.setFontSize(9);doc.text(new Date().toLocaleString('es-ES'),W/2,y,{align:'center'});y+=5;
