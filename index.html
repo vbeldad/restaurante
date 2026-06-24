@@ -257,6 +257,10 @@
       <button class="btn green sm" onclick="cartaPDF()">📄 Descargar PDF</button>
       <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
     </div>
+onst img = new Image();
+img.src = 'logo2.png';
+doc.addImage(img, 'PNG', 10, 5, 60, 30);
+y = 40;
   </div>
   <div class="card">
     <h2>Vista previa de la carta</h2>
