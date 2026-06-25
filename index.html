@@ -258,7 +258,7 @@
       <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
     </div>
 onst img = new Image();
-'https://raw.githubusercontent.com/vbeldad/restaurante/main/logo.png.png'
+'https://raw.githubusercontent.com/vbeldad/restaurante/main/logo.png'
 
 doc.addImage(img, 'PNG', 10, 5, 60, 30);
 y = 40;
@@ -969,7 +969,7 @@ function mesaPDF(){
   if(!m.items.length){toast('La mesa está vacía');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*16],unit:'mm'});
 const img = new Image();
-   img.src = 'logo.png.png';
+   img.src = 'logo.png';
    doc.addImage(img, 'PNG', 10, 5, 60, 30);
   let y=40;const W=80;
   if(rest.name){doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(rest.name,W/2,y,{align:'center'});y+=6;}
