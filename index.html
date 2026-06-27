@@ -258,7 +258,8 @@
       <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
     </div>
 const img = new Image();
-'https://raw.githubusercontent.com/vbeldad/restaurante/main/logo.png.png'
+img.src = 'https://raw.githubusercontent.com/vbeldad/restaurante/main/logo.png.png';
+
 
 doc.addImage(img, 'PNG', 10, 5, 60, 30);
 y = 40;
