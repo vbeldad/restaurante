@@ -703,7 +703,11 @@ function menuPDF(){
     esq(15,15,10,10);esq(W-15,15,-10,10);esq(15,H-15,10,-10);esq(W-15,H-15,-10,-10);
   }
   fondo();
-  let y=34;
+  const imgM = new Image();
+  imgM.src = 'logo.png.png';
+  doc.addImage(imgM, 'PNG', 65, 16, 80, 20);
+
+  let y=44;
   // pequeño adorno superior
   doc.setDrawColor(...DORADO);doc.setLineWidth(0.4);
   doc.line(70,y-6,140,y-6);
