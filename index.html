@@ -257,12 +257,6 @@
       <button class="btn green sm" onclick="cartaPDF()">📄 Descargar PDF</button>
       <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
     </div>
-const img = new Image();
-img.src = 'https://raw.githubusercontent.com/vbeldad/restaurante/main/logo.png.png';
-
-
-doc.addImage(img, 'PNG', 10, 5, 60, 30);
-y = 40;
   </div>
   <div class="card">
     <h2>Vista previa de la carta</h2>
@@ -594,9 +588,11 @@ function cartaPDF(){
   const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
   if(!secs.length){toast('Selecciona alguna sección');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
-  let y=22;
+  const img = new Image();
+  img.src = 'logo.png.png';
+  doc.addImage(img, 'PNG', 65, 8, 80, 20);
+  let y=38;
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
-  if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
   doc.setFontSize(13);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Carta',105,y,{align:'center'});y+=10;
   secs.forEach(s=>{
     const items=dishes.filter(d=>d.sec===s);
