@@ -515,9 +515,10 @@ function saveMenu(){
   save();renderMenuPreview();toast('Menú guardado ✔');
 }
 function clearMenu(){
-  const t=document.getElementById('mType').value;
-  if(!confirm('¿Vaciar este menú y empezar de nuevo?'))return;
-  delete menus[t];save();loadMenu();toast('Menú vaciado');
+  if(!confirm('¿Vaciar los platos seleccionados? (el precio y los textos se mantienen)'))return;
+  // Solo desmarcar los platos de cada apartado; precio, nota y pie se conservan
+  menuGroups.forEach(g=>{g.items=[];});
+  renderGroups();renderMenuPreview();toast('Platos vaciados');
 }
 function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
 function descOf(id){const d=dishes.find(x=>x.id===id);return d&&d.desc?d.desc:'';}
