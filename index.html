@@ -29,6 +29,9 @@
   label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px;font-weight:600}
   input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:8px;font-size:.95rem;font-family:inherit}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  input.buscador{background:#3a2a1c;border:2px solid var(--accent);color:#fff;font-weight:600;box-shadow:0 0 0 3px rgba(224,123,57,.18)}
+  input.buscador::placeholder{color:#f0b98a;opacity:1}
+  input.buscador:focus{border-color:#ffa05a;box-shadow:0 0 0 4px rgba(224,123,57,.3)}
   .row{display:flex;gap:12px;flex-wrap:wrap}
   .row>div{flex:1;min-width:140px}
   .btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s}
@@ -189,7 +192,7 @@
   </div>
   <div class="card noprint" style="padding-bottom:14px">
     <label>🔍 Buscar plato</label>
-    <input id="dbSearch" placeholder="Escribe para buscar..." oninput="renderDB()" autocomplete="off">
+    <input id="dbSearch" class="buscador" placeholder="Escribe para buscar..." oninput="renderDB()" autocomplete="off">
   </div>
   <div class="card" id="dbList"></div>
   <div class="card">
@@ -222,7 +225,7 @@
     </div>
     <h3 style="margin-top:18px">Apartados del menú</h3>
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado, marca los platos que se ofrecen. Usa el buscador para encontrarlos rápido.</p>
-    <input id="menuSearch" placeholder="🔍 Buscar plato..." oninput="renderGroups()" autocomplete="off" style="margin-bottom:12px">
+    <input id="menuSearch" class="buscador" placeholder="🔍 Buscar plato..." oninput="renderGroups()" autocomplete="off" style="margin-bottom:12px">
     <div id="menuGroups"></div>
     <div class="row mt">
       <div style="flex:2"><label>Pie de página / anuncio de evento (opcional)</label><input id="mFoot" placeholder="Ej: ¡Reserva tu mesa para San Valentín!" oninput="renderMenuPreview()"></div>
@@ -862,7 +865,7 @@ function renderDetalle(){
     '<div class="card noprint"><button class="btn gray sm" onclick="renderMesas()">← Volver a mesas</button>'+
     '<h2 style="margin-top:12px">🪑 '+m.nombre+'</h2>'+
     '<h3>Añadir a la cuenta</h3>'+
-    '<input id="mesaSearch" placeholder="🔍 Buscar plato..." oninput="renderMesaAddList()" autocomplete="off" style="margin-bottom:12px">'+
+    '<input id="mesaSearch" class="buscador" placeholder="🔍 Buscar plato..." oninput="renderMesaAddList()" autocomplete="off" style="margin-bottom:12px">'+
     '<div id="mesaAddList"></div>'+
     '</div>'+
     '<div class="card"><h2>Cuenta</h2><div id="ticketBox">'+ticket+'</div>'+
