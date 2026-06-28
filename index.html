@@ -173,7 +173,7 @@
   <div class="card">
     <h2>Datos del restaurante</h2>
     <div class="row">
-      <div style="flex:2"><label>Nombre del restaurante</label><input id="rName" placeholder="Ej: Casa Valentín" oninput="saveRest()"></div>
+      <div style="flex:2"><label>Email</label><input id="rName" placeholder="Ej: info@casavalentin.com" oninput="saveRest()"></div>
       <div><label>Teléfono</label><input id="rPhone" placeholder="93 000 00 00" oninput="saveRest()"></div>
     </div>
   </div>
@@ -579,7 +579,7 @@ function renderCarta(){
   if(!dishes.length){c.innerHTML='<div class="empty">No hay platos.</div>';return;}
   const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
   if(!secs.length){c.innerHTML='<div class="empty">No hay ninguna sección seleccionada.</div>';return;}
-  let html='<div class="preview">'+(rest.name?'<h3>'+rest.name+'</h3>':'');
+  let html='<div class="preview">';
   secs.forEach(s=>{
     const items=dishes.filter(d=>d.sec===s);
     html+='<h3>'+SECS[s]+'</h3>';
@@ -625,7 +625,7 @@ function currentMenu(){
 function menuText(){
   const {m,tit}=currentMenu();
   if(!m||!m.groups){return '';}
-  let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n';
+  let txt=tit+'\n';
   if(m.note)txt+=m.note+'\n';
   txt+='\n';
   m.groups.forEach(g=>{
@@ -642,6 +642,7 @@ function menuText(){
   txt+='PRECIO: '+eur(m.price);
   if(m.foot)txt+='\n\n'+m.foot;
   if(rest.phone)txt+='\n\nReservas: '+rest.phone;
+  if(rest.name)txt+=(rest.phone?'\n':'\n\n')+rest.name;
   txt+='\n\n'+MSG_ALERGIAS;
   return txt;
 }
@@ -658,7 +659,7 @@ function sendWhatsApp(){
 function sendEmail(){
   const {m,tit}=currentMenu();
   if(!m){toast('Guarda primero el menú');return;}
-  window.location.href='mailto:?subject='+encodeURIComponent((rest.name?rest.name+' - ':'')+tit)+'&body='+encodeURIComponent(menuText());
+  window.location.href='mailto:?subject='+encodeURIComponent(tit)+'&body='+encodeURIComponent(menuText());
 }
 function menuPDF(){
   const {m,tit}=currentMenu();
@@ -716,7 +717,6 @@ function menuPDF(){
   doc.setDrawColor(...DORADO);doc.setLineWidth(0.4);
   doc.line(70,y-6,140,y-6);
   doc.setFillColor(...DORADO);doc.circle(105,y-6,1,'F');
-  if(rest.name){doc.setFontSize(24);doc.setFont('times','bold');doc.setTextColor(...MARRON);doc.text(rest.name,105,y,{align:'center'});y+=10;}
   doc.setFontSize(15);doc.setFont('times','italic');doc.setTextColor(...DORADO);doc.text(tit,105,y,{align:'center'});y+=6;
   // separador con rombo central
   doc.setLineWidth(0.4);doc.setDrawColor(...DORADO);
@@ -760,7 +760,8 @@ function menuPDF(){
     lf.forEach(ln=>{if(y>275)nuevaPagina();doc.text(ln,105,y,{align:'center'});y+=6;});
     y+=3;
   }
-  if(rest.phone){doc.setFontSize(10);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=7;}
+  if(rest.phone){doc.setFontSize(10);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=6;}
+  if(rest.name){doc.setFontSize(10);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text(rest.name,105,y,{align:'center'});y+=7;}
   doc.setFontSize(8.5);doc.setFont('times','italic');doc.setTextColor(...GRIS);
   const lineas=doc.splitTextToSize(MSG_ALERGIAS,140);
   doc.text(lineas,105,y,{align:'center'});
@@ -977,8 +978,8 @@ const img = new Image();
    img.src = 'logo.png.png';
    doc.addImage(img, 'PNG', 10, 5, 60, 30);
   let y=40;const W=80;
-  if(rest.name){doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(rest.name,W/2,y,{align:'center'});y+=6;}
-  if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=5;}
+  if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=4;}
+  if(rest.name){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text(rest.name,W/2,y,{align:'center'});y+=5;}
   doc.setFontSize(9);doc.text(new Date().toLocaleString('es-ES'),W/2,y,{align:'center'});y+=5;
   doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text(m.nombre,W/2,y,{align:'center'});y+=4;
   doc.setLineDashPattern([1,1],0);doc.line(6,y,W-6,y);y+=6;
@@ -1105,8 +1106,8 @@ function cierrePDF(f){
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
   let y=22;
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
-  if(rest.name){doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
   doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Cierre de caja',105,y,{align:'center'});y+=7;
+  if(rest.name){doc.setFontSize(9);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
   doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(fechaLarga(f),105,y,{align:'center'});y+=10;
   doc.setDrawColor(200,200,200);doc.line(20,y,190,y);y+=8;
   doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);
