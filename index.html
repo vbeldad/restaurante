@@ -273,6 +273,23 @@
 <script>
 // --- Activación por dispositivo ---
 const COD_OK='vbg08051963';
+// Precargar el logo del restaurante para los PDF
+let LOGO_IMG=null, LOGO_RATIO=1377/306;
+(function(){
+  const im=new Image();
+  im.crossOrigin='anonymous';
+  im.onload=function(){LOGO_IMG=im;LOGO_RATIO=im.width/im.height;};
+  im.src='logo.png.png';
+})();
+// Dibuja el logo centrado en un PDF. anchoMax en mm; devuelve el alto usado
+function pintarLogo(doc,cx,y,anchoMax){
+  if(!LOGO_IMG)return 0;
+  try{
+    const w=anchoMax, h=w/LOGO_RATIO;
+    doc.addImage(LOGO_IMG,'PNG',cx-w/2,y,w,h);
+    return h;
+  }catch(e){return 0;}
+}
 function appActivada(){return localStorage.getItem('rest_activado')==='si';}
 function comprobarCodigo(){
   const v=document.getElementById('actCode').value.trim().toLowerCase();
@@ -588,9 +605,11 @@ function cartaPDF(){
   const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
   if(!secs.length){toast('Selecciona alguna sección');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
-  let y=22;
+  let y=16;
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
-  if(rest.name){doc.setFontSize(20);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
+  const hLogo=pintarLogo(doc,105,y,65);
+  if(hLogo){y+=hLogo+5;}else{y+=6;}
+  if(rest.name){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
   doc.setFontSize(13);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Carta',105,y,{align:'center'});y+=10;
   secs.forEach(s=>{
     const items=dishes.filter(d=>d.sec===s);
@@ -701,12 +720,15 @@ function menuPDF(){
     esq(15,15,10,10);esq(W-15,15,-10,10);esq(15,H-15,10,-10);esq(W-15,H-15,-10,-10);
   }
   fondo();
-  let y=34;
+  let y=24;
+  // Logo del restaurante centrado arriba
+  const hLogo=pintarLogo(doc,105,y,70);
+  if(hLogo){y+=hLogo+6;}else{y+=10;}
   // pequeño adorno superior
   doc.setDrawColor(...DORADO);doc.setLineWidth(0.4);
   doc.line(70,y-6,140,y-6);
   doc.setFillColor(...DORADO);doc.circle(105,y-6,1,'F');
-  if(rest.name){doc.setFontSize(24);doc.setFont('times','bold');doc.setTextColor(...MARRON);doc.text(rest.name,105,y,{align:'center'});y+=10;}
+  if(rest.name){doc.setFontSize(13);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text(rest.name,105,y,{align:'center'});y+=8;}
   doc.setFontSize(15);doc.setFont('times','italic');doc.setTextColor(...DORADO);doc.text(tit,105,y,{align:'center'});y+=6;
   // separador con rombo central
   doc.setLineWidth(0.4);doc.setDrawColor(...DORADO);
@@ -963,8 +985,10 @@ function mesaPDF(){
   const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
   if(!m.items.length){toast('La mesa está vacía');return;}
   const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*16],unit:'mm'});
-  let y=10;const W=80;
-  if(rest.name){doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(rest.name,W/2,y,{align:'center'});y+=6;}
+  let y=8;const W=80;
+  const hLogo=pintarLogo(doc,W/2,y,50);
+  if(hLogo){y+=hLogo+3;}
+  if(rest.name){doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(rest.name,W/2,y,{align:'center'});y+=5;}
   if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=5;}
   doc.setFontSize(9);doc.text(new Date().toLocaleString('es-ES'),W/2,y,{align:'center'});y+=5;
   doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text(m.nombre,W/2,y,{align:'center'});y+=4;
@@ -1090,9 +1114,11 @@ function cierrePDF(f){
   if(!filas.length)return;
   const totalDia=filas.reduce((s,h)=>s+h.total,0);
   const {jsPDF}=window.jspdf;const doc=new jsPDF();
-  let y=22;
+  let y=16;
   doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
-  if(rest.name){doc.setFontSize(18);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);doc.text(rest.name,105,y,{align:'center'});y+=8;}
+  const hLogo=pintarLogo(doc,105,y,60);
+  if(hLogo){y+=hLogo+5;}else{y+=6;}
+  if(rest.name){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
   doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Cierre de caja',105,y,{align:'center'});y+=7;
   doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(fechaLarga(f),105,y,{align:'center'});y+=10;
   doc.setDrawColor(200,200,200);doc.line(20,y,190,y);y+=8;
