@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Restaurante</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#1a1d23; --panel:#23272f; --panel2:#2b303a; --line:#363c47;
+    --txt:#e6e9ef; --muted:#9aa3b2; --accent:#e07b39; --accent2:#3a9d6e;
+    --danger:#c0455a; --chip:#323845;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+  header{background:linear-gradient(135deg,#2b303a,#23272f);padding:18px 20px;border-bottom:3px solid var(--accent);position:sticky;top:0;z-index:20}
+  header h1{font-size:1.4rem;letter-spacing:.5px}
+  header h1 span{color:var(--accent)}
+  nav{display:flex;gap:6px;background:var(--panel);padding:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:19}
+  nav button{flex:1;min-width:120px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);padding:10px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:.15s}
+  nav button:hover{color:var(--txt)}
+  nav button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  main{max-width:1000px;margin:0 auto;padding:20px}
+  .tab{display:none}
+  .tab.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+  h2{font-size:1.1rem;margin-bottom:14px;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:8px}
+  h3{font-size:.95rem;margin:14px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:8px;font-size:.95rem;font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  input.buscador{background:#3a2a1e;border:2px solid var(--accent);color:#ffe;font-size:1.05rem;padding:13px 14px;border-radius:10px;font-weight:600}
+  input.buscador::placeholder{color:#e0a878;opacity:1}
+  input.buscador:focus{border-color:#ff9a4d;background:#42301f;box-shadow:0 0 0 3px rgba(224,123,57,.25)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:140px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;transition:.15s}
+  .btn:hover{filter:brightness(1.1)}
+  .btn.green{background:var(--accent2)}
+  .btn.gray{background:var(--chip);color:var(--txt)}
+  .btn.danger{background:var(--danger)}
+  .btn.sm{padding:5px 10px;font-size:.8rem}
+  .mt{margin-top:14px}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);font-size:.9rem}
+  th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+  td.price{text-align:right;font-weight:700;color:var(--accent);white-space:nowrap}
+  .pill{display:inline-block;background:var(--chip);padding:2px 9px;border-radius:20px;font-size:.74rem;color:var(--muted)}
+  .empty{color:var(--muted);text-align:center;padding:20px;font-style:italic}
+  .secblock{margin-bottom:18px}
+  .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.menu-grid{grid-template-columns:1fr}}
+  .menu-box{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .menu-box h4{color:var(--accent);margin-bottom:10px;font-size:1rem}
+  .total-box{background:linear-gradient(135deg,#2b303a,#23272f);border:2px solid var(--accent);border-radius:10px;padding:16px;text-align:center;margin-top:12px}
+  .total-box .num{font-size:2rem;font-weight:800;color:var(--accent)}
+  .multi{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px}
+  .multi label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
+  .multi input{width:auto}
+  .sec-acc{background:var(--panel2);border:1px solid var(--line);border-radius:8px;margin-bottom:6px;overflow:hidden}
+  .sec-acc summary{cursor:pointer;padding:10px 12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;font-size:.82rem;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .sec-acc summary::-webkit-details-marker{display:none}
+  .sec-acc summary::before{content:'▸';color:var(--muted);transition:.15s;font-size:.9rem}
+  .sec-acc[open] summary::before{transform:rotate(90deg)}
+  .sec-acc[open] summary{border-bottom:1px solid var(--line)}
+  .sec-items{display:flex;flex-direction:column;gap:6px;padding:10px 12px}
+  .sec-items label{display:flex;align-items:center;gap:8px;font-weight:400;color:var(--txt);margin:0;cursor:pointer}
+  .sec-items input{width:auto}
+  .cnt{background:var(--accent);color:#fff;border-radius:20px;padding:1px 8px;font-size:.72rem;margin-left:auto;letter-spacing:0}
+  .grp-acc{background:var(--panel2);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  .grp-acc summary{cursor:pointer;padding:14px;font-weight:700;color:var(--accent);font-size:1rem;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+  .grp-acc summary::-webkit-details-marker{display:none}
+  .grp-acc summary::before{content:'▸';color:var(--muted);transition:.15s}
+  .grp-acc[open] summary::before{transform:rotate(90deg)}
+  .grp-acc[open] summary{border-bottom:1px solid var(--line)}
+  .grp-acc .grp-tit{color:var(--accent)}
+  .grp-body{padding:12px}
+  .mesas-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .mesa-card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:.15s;text-align:center}
+  .mesa-card:hover{border-color:var(--accent)}
+  .mesa-card .mn{font-weight:700;font-size:1.05rem;margin-bottom:4px}
+  .mesa-card .mt{font-size:.8rem;color:var(--muted)}
+  .mesa-card .mtot{color:var(--accent);font-weight:800;font-size:1.2rem;margin-top:6px}
+  .add-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);gap:8px}
+  .add-row:hover{background:var(--panel2)}
+  .add-row .ap{color:var(--accent);font-weight:700;white-space:nowrap}
+  .ticket-line{display:flex;justify-content:space-between;padding:7px 4px;border-bottom:1px solid var(--line);gap:8px;align-items:center}
+  .qty-btn{background:var(--chip);border:none;color:var(--txt);width:26px;height:26px;border-radius:6px;cursor:pointer;font-weight:700;font-size:1rem}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;padding:12px 22px;border-radius:10px;font-weight:600;opacity:0;transition:.3s;z-index:50;pointer-events:none}
+  .toast.show{opacity:1}
+  .preview{background:#fff;color:#222;border-radius:10px;padding:24px;margin-top:14px}
+  .preview h3{color:var(--accent);border-bottom:2px solid var(--accent);text-align:center}
+  .preview .ml{margin:10px 0}
+  .preview .ml b{color:#444}
+  .preview .pr{text-align:center;font-size:1.6rem;font-weight:800;color:var(--accent);margin-top:14px}
+  #activacion{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+  .act-box{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:14px;padding:32px 26px;max-width:380px;width:100%;text-align:center}
+  .act-box .act-icon{font-size:2.4rem;margin-bottom:8px}
+  .act-box h2{color:var(--accent);border:none;justify-content:center;margin-bottom:10px}
+  .act-box p{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+  .act-box input{text-align:center;font-size:1.05rem;letter-spacing:1px}
+  @media print{header,nav,.noprint{display:none!important}body{background:#fff}main{max-width:none}}
+</style>
+</head>
+<body>
+<div id="activacion" style="display:none">
+  <div class="act-box">
+    <div class="act-icon">🔒</div>
+    <h2>Activación</h2>
+    <p>Esta aplicación necesita un código de activación para usarse en este dispositivo. Introdúcelo una sola vez.</p>
+    <input id="actCode" type="text" placeholder="Código de activación" autocomplete="off" onkeydown="if(event.key==='Enter')comprobarCodigo()">
+    <button class="btn green" onclick="comprobarCodigo()" style="width:100%;margin-top:10px">Activar</button>
+    <div id="actError" style="color:var(--danger);font-size:.85rem;margin-top:10px;display:none">Código incorrecto. Inténtalo de nuevo.</div>
+  </div>
+</div>
+<header><h1>🍽️ Gestión de <span>Restaurante</span></h1></header>
+<nav>
+  <button class="active" data-tab="mesas">🪑 Mesas</button>
+  <button data-tab="historial">📊 Historial</button>
+  <button data-tab="db">Base de datos</button>
+  <button data-tab="menus">Menús</button>
+  <button data-tab="carta">Carta / Precios</button>
+</nav>
+<main>
+
+<!-- ====== MESAS ====== -->
+<div class="tab active" id="mesas">
+  <!-- Vista lista de mesas -->
+  <div id="mesasLista">
+    <div class="card noprint">
+      <h2>Mesas abiertas</h2>
+      <div class="row" style="align-items:flex-end">
+        <div style="flex:2"><label>Nombre o número de mesa</label><input id="newMesa" placeholder="Ej: Mesa 4, Terraza 2..."></div>
+        <div style="flex:0"><button class="btn green" onclick="abrirMesa()">+ Abrir mesa</button></div>
+      </div>
+    </div>
+    <div class="card" id="mesasGrid"></div>
+  </div>
+  <!-- Vista detalle de una mesa -->
+  <div id="mesaDetalle" style="display:none"></div>
+</div>
+
+<!-- ====== HISTORIAL ====== -->
+<div class="tab" id="historial">
+  <div class="card">
+    <h2>Historial de caja</h2>
+    <div class="row noprint" style="margin-bottom:14px">
+      <div style="flex:0;min-width:160px"><label>Ver por</label>
+        <select id="histVista" onchange="renderHistorial()">
+          <option value="dias">Días</option>
+          <option value="semanas">Semanas</option>
+          <option value="meses">Meses</option>
+        </select>
+      </div>
+    </div>
+    <details class="grp-acc noprint" style="margin-bottom:14px">
+      <summary><span class="grp-tit" style="color:var(--danger)">🗑️ Borrar historial</span></summary>
+      <div class="grp-body">
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Cuidado: lo que borres no se puede recuperar. Si quieres conservarlo, descarga antes una copia de seguridad.</p>
+        <div class="row" style="align-items:flex-end;margin-bottom:12px">
+          <div><label>Borrar lo anterior a esta fecha</label><input type="date" id="histFechaBorrar"></div>
+          <div style="flex:0"><button class="btn gray" onclick="borrarHistorialHasta()">Borrar lo anterior</button></div>
+        </div>
+        <button class="btn danger" onclick="borrarTodoHistorial()">Borrar TODO el historial</button>
+      </div>
+    </details>
+    <div id="histContent"></div>
+  </div>
+</div>
+
+<!-- ====== BASE DE DATOS ====== -->
+<div class="tab" id="db">
+  <div class="card">
+    <h2>Datos del restaurante</h2>
+    <div class="row">
+      <div style="flex:2"><label>Nombre del restaurante</label><input id="rName" placeholder="Ej: Casa Valentín" oninput="saveRest()"></div>
+      <div><label>Teléfono</label><input id="rPhone" placeholder="93 000 00 00" oninput="saveRest()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Añadir plato / bebida</h2>
+    <div class="row">
+      <div style="flex:2"><label>Nombre</label><input id="pName" placeholder="Ej: Ensalada mixta"></div>
+      <div><label>Sección</label>
+        <select id="pSec"></select>
+      </div>
+      <div><label>Precio (€)</label><input id="pPrice" type="number" step="0.10" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="row mt"><div style="flex:2"><label>Descripción (opcional)</label><input id="pDesc" placeholder="Ingredientes, alérgenos..."></div></div>
+    <div class="mt"><button class="btn green" id="btnDish" onclick="addDish()">+ Añadir a la base de datos</button>
+    <button class="btn gray" id="btnCancelDish" onclick="cancelEditDish()" style="display:none">Cancelar</button></div>
+  </div>
+  <div class="card noprint" style="padding-bottom:14px">
+    <label>🔍 Buscar plato</label>
+    <input id="dbSearch" class="buscador" placeholder="🔍 Escribe para buscar un plato..." oninput="renderDB()" autocomplete="off">
+  </div>
+  <div class="card" id="dbList"></div>
+  <div class="card">
+    <h2>💾 Copia de seguridad</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">Guarda regularmente una copia. El archivo contiene toda la base de datos, los menús y los datos del restaurante. Puedes restaurarlo en este u otro dispositivo.</p>
+    <div class="row noprint">
+      <button class="btn green sm" onclick="exportData()">⬇️ Descargar copia de seguridad</button>
+      <button class="btn gray sm" onclick="document.getElementById('importFile').click()">⬆️ Restaurar copia</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ====== MENÚS ====== -->
+<div class="tab" id="menus">
+  <div class="card noprint">
+    <h2>Configurar menú</h2>
+    <div class="row">
+      <div><label>Tipo de menú</label>
+        <select id="mType" onchange="loadMenu()">
+          <option value="semana">Menú entre semana (L-V)</option>
+          <option value="finde">Menú de fin de semana</option>
+          <option value="infantil">Menú infantil</option>
+        </select>
+      </div>
+      <div><label>Precio fijo del menú (€)</label><input id="mPrice" type="number" step="0.10" min="0" placeholder="0.00" oninput="renderMenuPreview()"></div>
+    </div>
+    <div class="row mt">
+      <div style="flex:2"><label>Cabecera / anotación (opcional)</label><input id="mNote" placeholder="Ej: Semana del 23 al 27 de junio" oninput="renderMenuPreview()"></div>
+    </div>
+    <h3 style="margin-top:18px">Apartados del menú</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">En cada apartado, marca los platos que se ofrecen. Usa el buscador para encontrarlos rápido.</p>
+    <input id="menuSearch" class="buscador" placeholder="🔍 Buscar plato..." oninput="renderGroups()" autocomplete="off" style="margin-bottom:12px">
+    <div id="menuGroups"></div>
+    <div class="row mt">
+      <div style="flex:2"><label>Pie de página / anuncio de evento (opcional)</label><input id="mFoot" placeholder="Ej: ¡Reserva tu mesa para San Valentín!" oninput="renderMenuPreview()"></div>
+    </div>
+    <div class="mt"><button class="btn green" onclick="saveMenu()">💾 Guardar menú</button>
+    <button class="btn gray" onclick="clearMenu()">🗑️ Vaciar este menú</button></div>
+  </div>
+  <div class="card">
+    <h2>Vista previa del menú</h2>
+    <div class="row noprint" style="margin-bottom:14px">
+      <button class="btn green sm" onclick="menuPDF()">📄 Descargar PDF</button>
+      <button class="btn sm" style="background:#25d366" onclick="sendWhatsApp()">💬 WhatsApp</button>
+      <button class="btn sm" style="background:#4a6fa5" onclick="sendEmail()">✉️ Email</button>
+      <button class="btn gray sm" onclick="copyMenu()">📋 Copiar texto</button>
+      <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+    <div id="menuPreview"></div>
+  </div>
+</div>
+
+<!-- ====== CARTA ====== -->
+<div class="tab" id="carta">
+  <div class="card noprint">
+    <h2>Imprimir carta de precios</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:12px">Marca las secciones que quieras incluir. Solo se imprimirá lo seleccionado.</p>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn gray sm" onclick="selectAllCarta(true)">Marcar todo</button>
+      <button class="btn gray sm" onclick="selectAllCarta(false)">Desmarcar todo</button>
+    </div>
+    <div class="multi" id="cartaSecs" style="max-height:none"></div>
+    <div class="mt">
+      <button class="btn green sm" onclick="cartaPDF()">📄 Descargar PDF</button>
+      <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Vista previa de la carta</h2>
+    <div id="cartaList"></div>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+// --- Activación por dispositivo ---
+const COD_OK='vbg08051963';
+// Precargar el logo del restaurante para los PDF
+let LOGO_IMG=null, LOGO_RATIO=1377/306;
+(function(){
+  const im=new Image();
+  im.crossOrigin='anonymous';
+  im.onload=function(){LOGO_IMG=im;LOGO_RATIO=im.width/im.height;};
+  im.src='logo.png.png';
+})();
+// Dibuja el logo centrado en un PDF. anchoMax en mm; devuelve el alto usado
+function pintarLogo(doc,cx,y,anchoMax){
+  if(!LOGO_IMG)return 0;
+  try{
+    const w=anchoMax, h=w/LOGO_RATIO;
+    doc.addImage(LOGO_IMG,'PNG',cx-w/2,y,w,h);
+    return h;
+  }catch(e){return 0;}
+}
+function appActivada(){return localStorage.getItem('rest_activado')==='si';}
+function comprobarCodigo(){
+  const v=document.getElementById('actCode').value.trim().toLowerCase();
+  if(v===COD_OK){
+    localStorage.setItem('rest_activado','si');
+    document.getElementById('activacion').style.display='none';
+  }else{
+    document.getElementById('actError').style.display='block';
+    document.getElementById('actCode').value='';
+  }
+}
+if(!appActivada()){
+  // mostrar pantalla de activación en cuanto cargue el DOM
+  document.addEventListener('DOMContentLoaded',()=>{
+    document.getElementById('activacion').style.display='flex';
+    document.getElementById('actCode').focus();
+  });
+}
+const SECS={entrantes:"Entrantes",para_picar:"Para picar",tapas:"Tapas",primeros:"Ensaladas",segundos:"Segundos",carnes:"Carnes",pescados:"Pescados",brasa:"De la brasa al plato",casa:"Platos de la casa",tablas_ibericas:"Tablas Ibéricas",para_menus:"Para Menús",vegetales:"Bocadillos vegetales",hamburguesas:"Hamburguesas",bocadillos_calientes:"Bocadillos calientes",bocadillos_frios:"Bocadillos fríos",bocadillos_especiales:"Bocadillos especiales",postres:"Postres",infantil:"Infantil",bebidas:"Bebidas",refrescos:"Refrescos",cervezas:"Cervezas",sidras:"Sidras",vinos:"Vinos"};
+// Claves de las secciones ordenadas alfabéticamente por su nombre
+function secKeys(){return Object.keys(SECS).sort((a,b)=>SECS[a].localeCompare(SECS[b],'es'));}
+let dishes=JSON.parse(localStorage.getItem('rest_dishes')||'[]');
+let menus=JSON.parse(localStorage.getItem('rest_menus')||'{}');
+// Migrar menús del formato antiguo (primeros/segundos/postres/bebidas) al de grupos
+(function migrateMenus(){
+  let changed=false;
+  Object.keys(menus).forEach(t=>{
+    const m=menus[t];
+    if(m&&!m.groups&&(m.primeros||m.segundos||m.postres||m.bebidas)){
+      m.groups=[
+        {titulo:'Primeros a elegir',sec:'primeros',items:m.primeros||[]},
+        {titulo:'Segundos a elegir',sec:'segundos',items:m.segundos||[]},
+        {titulo:'Postres',sec:'postres',items:m.postres||[]},
+        {titulo:'Bebida incluida',sec:'bebidas',items:m.bebidas||[]}
+      ];
+      delete m.primeros;delete m.segundos;delete m.postres;delete m.bebidas;
+      changed=true;
+    }
+  });
+  if(changed)localStorage.setItem('rest_menus',JSON.stringify(menus));
+})();
+let rest=JSON.parse(localStorage.getItem('rest_info')||'{"name":"","phone":""}');
+let mesas=JSON.parse(localStorage.getItem('rest_mesas')||'[]');
+let historial=JSON.parse(localStorage.getItem('rest_historial')||'[]');
+
+function save(){localStorage.setItem('rest_dishes',JSON.stringify(dishes));localStorage.setItem('rest_menus',JSON.stringify(menus));localStorage.setItem('rest_mesas',JSON.stringify(mesas));localStorage.setItem('rest_historial',JSON.stringify(historial));}
+function saveRest(){rest={name:document.getElementById('rName').value,phone:document.getElementById('rPhone').value};localStorage.setItem('rest_info',JSON.stringify(rest));}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+function eur(n){return Number(n||0).toFixed(2)+' €';}
+
+// Navegación
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active');
+  if(b.dataset.tab==='menus')loadMenu();
+  if(b.dataset.tab==='carta')renderCarta();
+  if(b.dataset.tab==='mesas')renderMesas();
+  if(b.dataset.tab==='historial')renderHistorial();
+});
+
+// --- Base de datos ---
+let editingDishId=null;
+function addDish(){
+  const name=document.getElementById('pName').value.trim();
+  const sec=document.getElementById('pSec').value;
+  const price=parseFloat(document.getElementById('pPrice').value);
+  const desc=document.getElementById('pDesc').value.trim();
+  if(!name){toast('Pon un nombre');return;}
+  if(isNaN(price)){toast('Pon un precio');return;}
+  if(editingDishId){
+    const d=dishes.find(x=>x.id===editingDishId);
+    if(d){d.name=name;d.sec=sec;d.price=price;d.desc=desc;}
+    toast('Cambios guardados ✔');
+    cancelEditDish();
+  }else{
+    dishes.push({id:Date.now(),name,sec,price,desc});
+    toast('Añadido ✔');
+    document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
+    document.getElementById('pName').focus();
+  }
+  save();renderDB();
+}
+function editDish(id){
+  const d=dishes.find(x=>x.id===id);if(!d)return;
+  editingDishId=id;
+  document.getElementById('pName').value=d.name;
+  document.getElementById('pSec').value=d.sec;
+  document.getElementById('pPrice').value=d.price;
+  document.getElementById('pDesc').value=d.desc||'';
+  document.getElementById('btnDish').textContent='💾 Guardar cambios';
+  document.getElementById('btnCancelDish').style.display='inline-block';
+  document.getElementById('pName').scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('pName').focus();
+}
+function cancelEditDish(){
+  editingDishId=null;
+  document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pDesc').value='';
+  document.getElementById('btnDish').textContent='+ Añadir a la base de datos';
+  document.getElementById('btnCancelDish').style.display='none';
+}
+function delDish(id){if(!confirm('¿Eliminar este plato?'))return;dishes=dishes.filter(d=>d.id!==id);if(editingDishId===id)cancelEditDish();save();renderDB();}
+function renderDB(){
+  const c=document.getElementById('dbList');
+  if(!dishes.length){c.innerHTML='<h2>Platos guardados</h2><div class="empty">Aún no hay platos. Añade el primero arriba.</div>';return;}
+  const sEl=document.getElementById('dbSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
+  // Recordar qué secciones tiene abiertas el usuario (por su clave), para no cerrarlas al reconstruir
+  const abiertas=new Set([...c.querySelectorAll('details.grp-acc[open]')].map(d=>d.dataset.sec));
+  const totalFiltrados=dishes.filter(coincide).length;
+  let html='<h2>Platos guardados ('+(q?totalFiltrados+' de '+dishes.length:dishes.length)+')</h2>';
+  if(q&&!totalFiltrados){c.innerHTML=html+'<div class="empty">No hay platos que coincidan con "'+q+'".</div>';return;}
+  secKeys().forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s&&coincide(d));
+    if(!items.length)return;
+    // Abrir si: el usuario la tenía abierta, o hay una búsqueda activa con resultados
+    const abrir=(abiertas.has(s)||q)?' open':'';
+    html+='<details class="grp-acc" data-sec="'+s+'"'+abrir+'><summary><span class="grp-tit">'+SECS[s]+'</span> <span class="cnt">'+items.length+'</span></summary><div class="grp-body" style="padding:4px 12px 12px"><table><tbody>';
+    items.forEach(d=>{
+      html+='<tr><td><b>'+d.name+'</b>'+(d.desc?'<br><span class="pill">'+d.desc+'</span>':'')+'</td><td class="price">'+eur(d.price)+'</td><td style="text-align:right;white-space:nowrap"><button class="btn sm" onclick="editDish('+d.id+')">✎</button> <button class="btn danger sm" onclick="delDish('+d.id+')">✕</button></td></tr>';
+    });
+    html+='</tbody></table></div></details>';
+  });
+  c.innerHTML=html;
+  // Solo una sección abierta a la vez: al abrir una, cerrar las demás
+  c.querySelectorAll('details.grp-acc').forEach(det=>{
+    det.addEventListener('toggle',()=>{
+      if(det.open){
+        c.querySelectorAll('details.grp-acc').forEach(otra=>{if(otra!==det)otra.open=false;});
+      }
+    });
+  });
+}
+
+// --- Menús (apartados fijos, selección libre de platos por tipo) ---
+// Cada menú: {price, note, groups:[{titulo, tipo, items:[ids]}]}
+let menuGroups=[]; // estado en edición
+
+// Secciones que entran en cada tipo de apartado
+const FOOD_SECS=['entrantes','para_picar','tapas','primeros','segundos','carnes','pescados','brasa','casa','tablas_ibericas','para_menus','vegetales','hamburguesas','bocadillos_calientes','bocadillos_frios','bocadillos_especiales','infantil'];
+const POSTRE_SECS=['postres'];
+const BEBIDA_SECS=['bebidas','refrescos','cervezas','sidras','vinos'];
+function tipoSecs(tipo){
+  if(tipo==='postre')return POSTRE_SECS;
+  if(tipo==='bebida')return BEBIDA_SECS;
+  return FOOD_SECS;
+}
+
+// Apartados fijos por tipo de menú
+const DEFAULT_GROUPS={
+  semana:[{titulo:'Primeros',tipo:'comida',items:[]},{titulo:'Segundos',tipo:'comida',items:[]},{titulo:'Postres',tipo:'postre',items:[]},{titulo:'Bebida',tipo:'bebida',items:[]}],
+  finde:[{titulo:'Primeros',tipo:'comida',items:[]},{titulo:'Segundos',tipo:'comida',items:[]},{titulo:'Postres',tipo:'postre',items:[]},{titulo:'Bebida',tipo:'bebida',items:[]}],
+  infantil:[{titulo:'Primeros',tipo:'comida',items:[]},{titulo:'Segundos',tipo:'comida',items:[]},{titulo:'Postres',tipo:'postre',items:[]},{titulo:'Bebida',tipo:'bebida',items:[]}]
+};
+
+function loadMenu(){
+  const t=document.getElementById('mType').value;
+  const m=menus[t];
+  // Siempre partimos de los 4 apartados fijos correctos
+  menuGroups=JSON.parse(JSON.stringify(DEFAULT_GROUPS[t]||[]));
+  if(m&&m.groups){
+    // Emparejar cada apartado guardado con el apartado fijo en la misma posición
+    menuGroups.forEach((g,i)=>{
+      const guardado=m.groups[i];
+      let ids=[];
+      if(guardado&&guardado.items){ids=guardado.items;}
+      // Solo conservar platos que existen y son del tipo correcto de este apartado, sin duplicados
+      const validos=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)).map(d=>d.id);
+      g.items=[...new Set(ids)].filter(id=>validos.includes(id));
+    });
+    document.getElementById('mPrice').value=m.price;
+    document.getElementById('mNote').value=m.note||'';
+    document.getElementById('mFoot').value=m.foot||'';
+  }else{
+    document.getElementById('mPrice').value='';
+    document.getElementById('mNote').value='';
+    document.getElementById('mFoot').value='';
+  }
+  // Vaciar el buscador y el contenedor para reiniciar el estado de apertura
+  const sb=document.getElementById('menuSearch');if(sb)sb.value='';
+  document.getElementById('menuGroups').innerHTML='';
+  renderGroups();renderMenuPreview();
+}
+function renderGroups(){
+  const c=document.getElementById('menuGroups');
+  const sEl=document.getElementById('menuSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=d=>!q||d.name.toLowerCase().includes(q)||(d.desc||'').toLowerCase().includes(q);
+  // Recordar qué apartados están abiertos ahora mismo, para no cerrarlos al filtrar
+  const abiertos=[...c.querySelectorAll('details.grp-acc')].map(d=>d.open);
+  const primeraVez=abiertos.length===0;
+  c.innerHTML=menuGroups.map((g,i)=>{
+    // mostrar los que coincidan con la búsqueda + los que ya estén marcados
+    const items=dishes.filter(d=>tipoSecs(g.tipo).includes(d.sec)&&(coincide(d)||g.items.includes(d.id)));
+    let list;
+    if(!items.length){
+      list='<span class="empty" style="padding:6px">'+(q?'Ningún plato coincide con la búsqueda':'No hay platos de este tipo en la base de datos')+'</span>';
+    }else{
+      list=items.map(d=>'<label><input type="checkbox" '+(g.items.includes(d.id)?'checked':'')+' onchange="toggleItem('+i+','+d.id+')"> '+d.name+(d.desc?' <span style="color:var(--muted);font-size:.82rem">— '+d.desc+'</span>':'')+' <span class="pill">'+eur(d.price)+'</span></label>').join('');
+    }
+    const n=g.items.length;
+    const badge=n?' <span class="cnt">'+n+'</span>':'';
+    // Mantener abierto lo que el usuario tenía abierto. La primera vez, abrir solo los vacíos.
+    let open;
+    if(primeraVez)open=(n?'':' open');
+    else open=abiertos[i]?' open':'';
+    return '<details class="grp-acc"'+open+'><summary><span class="grp-tit">'+(g.titulo||'Apartado')+'</span>'+badge+'</summary>'+
+      '<div class="grp-body">'+
+      '<div class="multi" style="margin-top:8px;max-height:300px">'+list+'</div></div></details>';
+  }).join('');
+  // Solo una sección abierta a la vez (igual que en base de datos)
+  c.querySelectorAll('details.grp-acc').forEach(det=>{
+    det.addEventListener('toggle',()=>{
+      if(det.open)c.querySelectorAll('details.grp-acc').forEach(o=>{if(o!==det)o.open=false;});
+    });
+  });
+}
+function toggleItem(i,id){
+  const arr=menuGroups[i].items;const p=arr.indexOf(id);
+  if(p>=0)arr.splice(p,1);else arr.push(id);
+  updateGroupCounts();renderMenuPreview();
+}
+function updateGroupCounts(){
+  document.querySelectorAll('#menuGroups details.grp-acc').forEach((det,i)=>{
+    const g=menuGroups[i];if(!g)return;
+    const sum=det.querySelector('summary');
+    const n=g.items.length;
+    let cnt=sum.querySelector('.cnt');
+    if(n){if(!cnt){cnt=document.createElement('span');cnt.className='cnt';sum.appendChild(document.createTextNode(' '));sum.appendChild(cnt);}cnt.textContent=n;}
+    else if(cnt){cnt.remove();}
+  });
+}
+function saveMenu(){
+  const t=document.getElementById('mType').value;
+  menus[t]={price:parseFloat(document.getElementById('mPrice').value)||0,note:document.getElementById('mNote').value.trim(),foot:document.getElementById('mFoot').value.trim(),groups:JSON.parse(JSON.stringify(menuGroups))};
+  save();renderMenuPreview();toast('Menú guardado ✔');
+}
+function clearMenu(){
+  const t=document.getElementById('mType').value;
+  if(!confirm('¿Vaciar este menú y empezar de nuevo?'))return;
+  delete menus[t];save();loadMenu();toast('Menú vaciado');
+}
+function nameOf(id){const d=dishes.find(x=>x.id===id);return d?d.name:'';}
+function descOf(id){const d=dishes.find(x=>x.id===id);return d&&d.desc?d.desc:'';}
+function platoConDesc(id){const n=nameOf(id);if(!n)return '';const de=descOf(id);return de?n+' ('+de+')':n;}
+function menuTitle(t){return t==='semana'?'Menú del Día (Lunes a Viernes)':t==='finde'?'Menú de Fin de Semana':'Menú Infantil';}
+const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, por favor comunícalo a nuestro personal.';
+function renderMenuPreview(){
+  const t=document.getElementById('mType').value;
+  const c=document.getElementById('menuPreview');
+  // Usar lo que se está editando en vivo (menuGroups) en lugar del guardado
+  const groups=menuGroups&&menuGroups.length?menuGroups:(menus[t]&&menus[t].groups);
+  if(!groups){c.innerHTML='<div class="empty">Configura y guarda el menú para ver la vista previa.</div>';return;}
+  const precio=parseFloat(document.getElementById('mPrice').value)||0;
+  const nota=document.getElementById('mNote').value.trim();
+  const fEl=document.getElementById('mFoot');const pie=fEl?fEl.value.trim():'';
+  const m={price:precio,note:nota,groups:groups};
+  let html='<div class="preview"><h3>'+menuTitle(t)+'</h3>';
+  if(m.note)html+='<div style="text-align:center;color:#666;margin-bottom:8px">'+m.note+'</div>';
+  m.groups.forEach(g=>{
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
+    html+='<div class="ml"><b style="color:var(--accent)">'+g.titulo+'</b>';
+    ids.forEach(id=>{
+      const de=descOf(id);
+      html+='<div style="margin:5px 0 5px 4px"><span style="font-weight:700;font-size:1rem">'+nameOf(id)+'</span>'+
+        (de?'<br><span style="color:#777;font-size:.82rem;font-weight:400">'+de+'</span>':'')+'</div>';
+    });
+    html+='</div>';
+  });
+  html+='<div class="pr">'+eur(m.price)+'</div>';
+  if(pie)html+='<div style="text-align:center;color:var(--accent);font-weight:700;margin-top:12px">'+pie+'</div>';
+  html+='<div style="text-align:center;color:#888;font-size:.82rem;font-style:italic;margin-top:12px;border-top:1px solid #ddd;padding-top:10px">'+MSG_ALERGIAS+'</div></div>';
+  c.innerHTML=html;
+}
+
+// --- Carta ---
+let cartaSel=null; // secciones seleccionadas (Set de claves)
+let _cartaSeen=new Set();
+function buildCartaSecs(){
+  // secciones que tienen al menos un plato
+  const conPlatos=secKeys().filter(s=>dishes.some(d=>d.sec===s));
+  if(cartaSel===null)cartaSel=new Set(conPlatos); // por defecto todas marcadas
+  else conPlatos.forEach(s=>{if(!_cartaSeen.has(s)){cartaSel.add(s);}}); // sección nueva => marcada
+  _cartaSeen=new Set(conPlatos);
+  const box=document.getElementById('cartaSecs');
+  if(!conPlatos.length){box.innerHTML='<span class="empty" style="padding:6px">No hay platos todavía.</span>';return;}
+  box.innerHTML=conPlatos.map(s=>'<label><input type="checkbox" '+(cartaSel.has(s)?'checked':'')+' onchange="toggleCartaSec(\''+s+'\')"> '+SECS[s]+' <span class="pill">'+dishes.filter(d=>d.sec===s).length+'</span></label>').join('');
+}
+function toggleCartaSec(s){if(cartaSel.has(s))cartaSel.delete(s);else cartaSel.add(s);renderCarta();}
+function selectAllCarta(all){
+  const conPlatos=secKeys().filter(s=>dishes.some(d=>d.sec===s));
+  cartaSel=all?new Set(conPlatos):new Set();
+  buildCartaSecs();renderCarta();
+}
+function renderCarta(){
+  buildCartaSecs();
+  const c=document.getElementById('cartaList');
+  if(!dishes.length){c.innerHTML='<div class="empty">No hay platos.</div>';return;}
+  const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  if(!secs.length){c.innerHTML='<div class="empty">No hay ninguna sección seleccionada.</div>';return;}
+  let html='<div class="preview">'+(rest.name?'<h3>'+rest.name+'</h3>':'');
+  secs.forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s);
+    html+='<h3>'+SECS[s]+'</h3>';
+    items.forEach(d=>{html+='<div class="ml" style="display:flex;justify-content:space-between"><span><b>'+d.name+'</b>'+(d.desc?' — <i style="color:#666;font-size:.85em">'+d.desc+'</i>':'')+'</span><span style="color:var(--accent);font-weight:700;white-space:nowrap">'+eur(d.price)+'</span></div>';});
+  });
+  html+='</div>';
+  c.innerHTML=html;
+}
+function cartaPDF(){
+  const secs=secKeys().filter(s=>cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  if(!secs.length){toast('Selecciona alguna sección');return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=16;
+  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
+  const hLogo=pintarLogo(doc,105,y,65);
+  if(hLogo){y+=hLogo+5;}else{y+=6;}
+  if(rest.name){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
+  doc.setFontSize(13);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Carta',105,y,{align:'center'});y+=10;
+  secs.forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s);
+    if(y>265){doc.addPage();y=20;}
+    doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(SECS[s].toUpperCase(),20,y);y+=2;
+    doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=7;
+    doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
+    items.forEach(d=>{
+      if(y>278){doc.addPage();y=20;}
+      doc.text(d.name,22,y);
+      doc.setFont(undefined,'bold');doc.text(eur(d.price),188,y,{align:'right'});doc.setFont(undefined,'normal');
+      y+=6;
+      if(d.desc){doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(d.desc,24,y);doc.setFontSize(11);doc.setTextColor(40,40,40);y+=5;}
+    });
+    y+=5;
+  });
+  doc.save('carta.pdf');
+  toast('PDF generado ✔');
+}
+
+// --- Texto / PDF / Envío del menú ---
+function currentMenu(){
+  const t=document.getElementById('mType').value;
+  return {t,m:menus[t],tit:menuTitle(t)};
+}
+function menuText(){
+  const {m,tit}=currentMenu();
+  if(!m||!m.groups){return '';}
+  let txt=(rest.name?rest.name.toUpperCase()+'\n':'')+tit+'\n';
+  if(m.note)txt+=m.note+'\n';
+  txt+='\n';
+  m.groups.forEach(g=>{
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
+    txt+=g.titulo.toUpperCase()+':\n';
+    ids.forEach(id=>{
+      txt+='  '+nameOf(id)+'\n';
+      const de=descOf(id);
+      if(de)txt+='     '+de+'\n';
+    });
+    txt+='\n';
+  });
+  txt+='PRECIO: '+eur(m.price);
+  if(m.foot)txt+='\n\n'+m.foot;
+  if(rest.phone)txt+='\n\nReservas: '+rest.phone;
+  txt+='\n\n'+MSG_ALERGIAS;
+  return txt;
+}
+function copyMenu(){
+  const {m}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  navigator.clipboard.writeText(menuText()).then(()=>toast('Texto copiado ✔'));
+}
+function sendWhatsApp(){
+  const {m}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(menuText()),'_blank');
+}
+function sendEmail(){
+  const {m,tit}=currentMenu();
+  if(!m){toast('Guarda primero el menú');return;}
+  window.location.href='mailto:?subject='+encodeURIComponent((rest.name?rest.name+' - ':'')+tit)+'&body='+encodeURIComponent(menuText());
+}
+function menuPDF(){
+  const {m,tit}=currentMenu();
+  if(!m||!m.groups){toast('Guarda primero el menú');return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  const W=210,H=297;
+  // Paleta elegante
+  const CREMA=[250,247,240], DORADO=[176,141,87], MARRON=[74,58,42], GRIS=[120,110,98];
+  // Función de fondo y marco decorativo (se aplica a cada página)
+  function marcaAgua(){
+    const cx=105, cy=170, sc=2.1;
+    doc.setDrawColor(228,219,202);doc.setLineWidth(0.7);
+    // copa de vino
+    const r=9*sc, cuy=cy-9*sc;
+    let pts=[];for(let a=-25;a<=205;a+=10){const rad=Math.PI*a/180;pts.push([cx-r*Math.cos(rad), cuy+r*Math.sin(rad)]);}
+    for(let i=0;i<pts.length-1;i++)doc.line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);
+    const bowlBot=cuy+r;
+    doc.line(cx,bowlBot, cx,cy+12*sc);
+    doc.line(cx-7*sc,cy+12*sc, cx+7*sc,cy+12*sc);
+    // tenedor
+    const fx=cx-32*sc, ftop=cy-17*sc;
+    for(let i=-1;i<=1;i++)doc.line(fx+i*2.2*sc,ftop, fx+i*2.2*sc,ftop+6*sc);
+    let fp=[];for(let a=0;a<=180;a+=20){const rad=Math.PI*a/180;fp.push([fx-2.2*sc*Math.cos(rad), ftop+6*sc+1.5*sc*Math.sin(rad)]);}
+    for(let i=0;i<fp.length-1;i++)doc.line(fp[i][0],fp[i][1],fp[i+1][0],fp[i+1][1]);
+    doc.line(fx,ftop+7.5*sc, fx,cy+16*sc);
+    // cuchillo
+    const kx=cx+32*sc, ktop=cy-17*sc, filoX=kx-1.4*sc;
+    doc.line(filoX,ktop+1*sc, filoX,ktop+12*sc);
+    doc.line(filoX,ktop+1*sc, kx+2*sc,ktop+6*sc);
+    doc.line(kx+2*sc,ktop+6*sc, filoX,ktop+12*sc);
+    doc.line(filoX,ktop+12*sc, filoX,cy+16*sc);
+    doc.line(filoX,cy+16*sc, kx+1*sc,cy+16*sc);
+    doc.line(kx+1*sc,ktop+12*sc, kx+1*sc,cy+16*sc);
+  }
+  function fondo(){
+    // fondo crema
+    doc.setFillColor(...CREMA);doc.rect(0,0,W,H,'F');
+    // marca de agua tenue
+    marcaAgua();
+    // marco doble dorado
+    doc.setDrawColor(...DORADO);
+    doc.setLineWidth(0.8);doc.rect(12,12,W-24,H-24);
+    doc.setLineWidth(0.3);doc.rect(15,15,W-30,H-30);
+    // adornos en las esquinas (pequeñas líneas en diagonal)
+    const esq=(x,y,dx,dy)=>{doc.setLineWidth(0.5);doc.line(x,y,x+dx,y);doc.line(x,y,x,y+dy);};
+    esq(15,15,10,10);esq(W-15,15,-10,10);esq(15,H-15,10,-10);esq(W-15,H-15,-10,-10);
+  }
+  fondo();
+  let y=24;
+  // Logo del restaurante centrado arriba
+  const hLogo=pintarLogo(doc,105,y,70);
+  if(hLogo){y+=hLogo+6;}else{y+=10;}
+  // pequeño adorno superior
+  doc.setDrawColor(...DORADO);doc.setLineWidth(0.4);
+  doc.line(70,y-6,140,y-6);
+  doc.setFillColor(...DORADO);doc.circle(105,y-6,1,'F');
+  if(rest.name){doc.setFontSize(13);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text(rest.name,105,y,{align:'center'});y+=8;}
+  doc.setFontSize(15);doc.setFont('times','italic');doc.setTextColor(...DORADO);doc.text(tit,105,y,{align:'center'});y+=6;
+  // separador con rombo central
+  doc.setLineWidth(0.4);doc.setDrawColor(...DORADO);
+  doc.line(75,y,99,y);doc.line(111,y,135,y);
+  doc.setFillColor(...DORADO);
+  doc.triangle(105,y-2,102,y,108,y,'F');doc.triangle(105,y+2,102,y,108,y,'F');
+  y+=8;
+  if(m.note){doc.setFontSize(10);doc.setFont('times','italic');doc.setTextColor(...GRIS);doc.text(m.note,105,y,{align:'center'});y+=8;}
+
+  function nuevaPagina(){doc.addPage();fondo();y=34;}
+  m.groups.forEach(g=>{
+    const ids=(g.items||[]).filter(id=>nameOf(id));
+    if(!ids.length)return;
+    if(y>255)nuevaPagina();
+    doc.setFontSize(13);doc.setFont('times','bold');doc.setTextColor(...DORADO);
+    doc.text(g.titulo.toUpperCase(),105,y,{align:'center'});y+=2;
+    doc.setLineWidth(0.3);doc.setDrawColor(...DORADO);doc.line(85,y,125,y);y+=7;
+    ids.forEach(id=>{
+      if(y>270)nuevaPagina();
+      doc.setFont('times','bold');doc.setFontSize(12);doc.setTextColor(...MARRON);
+      doc.text(nameOf(id),105,y,{align:'center'});y+=5;
+      const de=descOf(id);
+      if(de){
+        doc.setFont('times','italic');doc.setFontSize(9.5);doc.setTextColor(...GRIS);
+        const lineas=doc.splitTextToSize(de,140);
+        lineas.forEach(ln=>{if(y>278)nuevaPagina();doc.text(ln,105,y,{align:'center'});y+=4.5;});
+      }
+      y+=3;
+    });y+=4;
+  });
+  if(y>250)nuevaPagina();
+  y+=2;
+  // precio destacado en recuadro
+  doc.setDrawColor(...DORADO);doc.setLineWidth(0.5);
+  doc.setFontSize(17);doc.setFont('times','bold');doc.setTextColor(...MARRON);
+  doc.text('Precio: '+eur(m.price),105,y,{align:'center'});y+=10;
+  if(m.foot){
+    if(y>270)nuevaPagina();
+    doc.setFontSize(12);doc.setFont('times','bolditalic');doc.setTextColor(...DORADO);
+    const lf=doc.splitTextToSize(m.foot,150);
+    lf.forEach(ln=>{if(y>275)nuevaPagina();doc.text(ln,105,y,{align:'center'});y+=6;});
+    y+=3;
+  }
+  if(rest.phone){doc.setFontSize(10);doc.setFont('times','normal');doc.setTextColor(...GRIS);doc.text('Reservas: '+rest.phone,105,y,{align:'center'});y+=7;}
+  doc.setFontSize(8.5);doc.setFont('times','italic');doc.setTextColor(...GRIS);
+  const lineas=doc.splitTextToSize(MSG_ALERGIAS,140);
+  doc.text(lineas,105,y,{align:'center'});
+  doc.save('menu-'+document.getElementById('mType').value+'.pdf');
+  toast('PDF generado ✔');
+}
+
+// --- Copia de seguridad ---
+function exportData(){
+  const data={dishes,menus,rest,mesas,historial,fecha:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  a.href=url;
+  a.download='restaurante-copia-'+d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2)+'.json';
+  a.click();URL.revokeObjectURL(url);
+  toast('Copia descargada ✔');
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.dishes&&!data.menus){toast('Archivo no válido');return;}
+      if(!confirm('Esto reemplazará todos los datos actuales por los de la copia. ¿Continuar?'))return;
+      dishes=data.dishes||[];menus=data.menus||{};rest=data.rest||{name:'',phone:''};mesas=data.mesas||[];historial=data.historial||[];
+      save();localStorage.setItem('rest_info',JSON.stringify(rest));
+      document.getElementById('rName').value=rest.name||'';
+      document.getElementById('rPhone').value=rest.phone||'';
+      renderDB();renderMesas();
+      toast('Copia restaurada ✔');
+    }catch(err){toast('Error al leer el archivo');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// --- Mesas / Comandas ---
+// mesa: {id, nombre, items:[{tipo:'plato'|'menu', ref, name, price, qty}]}
+let mesaActivaId=null;
+
+function abrirMesa(){
+  const nombre=document.getElementById('newMesa').value.trim();
+  if(!nombre){toast('Pon nombre o número');return;}
+  const m={id:Date.now(),nombre,items:[]};
+  mesas.push(m);save();
+  document.getElementById('newMesa').value='';
+  abrirDetalle(m.id);
+}
+function mesaTotal(m){return m.items.reduce((s,it)=>s+it.price*it.qty,0);}
+function descItem(it){
+  // Usar la descripción guardada; si no la tiene (items antiguos), buscarla en la base de datos
+  if(it.desc)return it.desc;
+  if(it.tipo==='plato'){const d=dishes.find(x=>x.id===it.ref);if(d&&d.desc)return d.desc;}
+  return '';
+}
+function renderMesas(){
+  mesaActivaId=null;
+  document.getElementById('mesaDetalle').style.display='none';
+  document.getElementById('mesasLista').style.display='block';
+  const c=document.getElementById('mesasGrid');
+  if(!mesas.length){c.innerHTML='<h2>Mesas abiertas</h2><div class="empty">No hay mesas abiertas. Abre una arriba.</div>';return;}
+  let html='<h2>Mesas abiertas ('+mesas.length+')</h2><div class="mesas-cards">';
+  mesas.forEach(m=>{
+    const n=m.items.reduce((s,it)=>s+it.qty,0);
+    html+='<div class="mesa-card" onclick="abrirDetalle('+m.id+')"><div class="mn">'+m.nombre+'</div><div class="mt">'+n+' artículo'+(n===1?'':'s')+'</div><div class="mtot">'+eur(mesaTotal(m))+'</div></div>';
+  });
+  html+='</div>';
+  c.innerHTML=html;
+}
+function abrirDetalle(id){
+  mesaActivaId=id;
+  mesaMostrarTodo=false;
+  document.getElementById('mesasLista').style.display='none';
+  const cont=document.getElementById('mesaDetalle');
+  cont.style.display='block';
+  renderDetalle();
+}
+function renderDetalle(){
+  const m=mesas.find(x=>x.id===mesaActivaId);
+  if(!m){renderMesas();return;}
+  const cont=document.getElementById('mesaDetalle');
+
+  // Ticket / cuenta
+  let ticket='';
+  if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
+  else{
+    m.items.forEach((it,idx)=>{
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(descItem(it)?'<br><span style="color:var(--muted);font-size:.78rem">'+descItem(it)+'</span>':'')+'</span>'+
+        '<span style="display:flex;align-items:center;gap:6px">'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
+        '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',1)">+</button>'+
+        '<span class="ap" style="min-width:70px;text-align:right">'+eur(it.price*it.qty)+'</span>'+
+        '</span></div>';
+    });
+  }
+  const total=mesaTotal(m);
+
+  cont.innerHTML=
+    '<div class="card noprint"><button class="btn gray sm" onclick="renderMesas()">← Volver a mesas</button>'+
+    '<h2 style="margin-top:12px">🪑 '+m.nombre+'</h2>'+
+    '<h3>Añadir a la cuenta</h3>'+
+    '<input id="mesaSearch" class="buscador" placeholder="🔍 Buscar plato..." oninput="renderMesaAddList()" autocomplete="off" style="margin-bottom:12px">'+
+    '<div id="mesaAddList"></div>'+
+    '</div>'+
+    '<div class="card"><h2>Cuenta</h2><div id="ticketBox">'+ticket+'</div>'+
+    '<div class="total-box"><div style="color:var(--muted);font-size:.85rem">TOTAL</div><div class="num">'+eur(total)+'</div></div>'+
+    '<div class="row noprint mt">'+
+    '<button class="btn green sm" onclick="mesaPDF()">📄 Ticket PDF</button>'+
+    '<button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>'+
+    '<button class="btn danger sm" onclick="cerrarMesa()">✓ Cobrar y cerrar mesa</button>'+
+    '</div></div>';
+  renderMesaAddList();
+}
+let mesaMostrarTodo=false; // si true, se muestran todas las secciones aunque no haya búsqueda
+function toggleMesaSecciones(){mesaMostrarTodo=!mesaMostrarTodo;renderMesaAddList();}
+function renderMesaAddList(){
+  const cont=document.getElementById('mesaAddList');
+  if(!cont)return;
+  const sEl=document.getElementById('mesaSearch');
+  const q=sEl?sEl.value.trim().toLowerCase():'';
+  const coincide=txt=>!q||txt.toLowerCase().includes(q);
+  // Botón para mostrar/ocultar todas las secciones
+  let addHtml='<div style="margin-bottom:10px"><button class="btn gray sm" onclick="toggleMesaSecciones()">'+(mesaMostrarTodo?'▲ Ocultar secciones':'▼ Mostrar todas las secciones')+'</button></div>';
+  // Si no hay búsqueda y no se han pedido mostrar, solo el buscador + botón
+  if(!q&&!mesaMostrarTodo){
+    addHtml+='<div class="empty" style="padding:10px">Escribe en el buscador para encontrar un plato, o pulsa "Mostrar todas las secciones".</div>';
+    cont.innerHTML=addHtml;return;
+  }
+  // Menús de precio fijo (se ocultan si hay búsqueda que no coincide con su nombre)
+  const tiposMenu=[['semana','Menú del Día'],['finde','Menú Fin de Semana'],['infantil','Menú Infantil']];
+  let menusDisp=tiposMenu.filter(([k,nom])=>menus[k]&&menus[k].price>0&&coincide(nom));
+  if(menusDisp.length){
+    addHtml+='<details class="sec-acc" open><summary>Menús</summary><div class="sec-items" style="padding:0">';
+    menusDisp.forEach(([k,nom])=>{
+      addHtml+='<div class="add-row"><span>'+nom+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(menus[k].price)+'</span><button class="btn green sm" onclick="addItem(\'menu\',\''+k+'\')">+</button></span></div>';
+    });
+    addHtml+='</div></details>';
+  }
+  // Platos por sección
+  secKeys().forEach(s=>{
+    const items=dishes.filter(d=>d.sec===s&&(coincide(d.name)||coincide(d.desc||'')));
+    if(!items.length)return;
+    const abrir=q?' open':'';
+    addHtml+='<details class="sec-acc"'+abrir+'><summary>'+SECS[s]+' <span class="cnt">'+items.length+'</span></summary><div class="sec-items" style="padding:0">';
+    items.forEach(d=>{
+      addHtml+='<div class="add-row"><span>'+d.name+(d.desc?' <span style="color:var(--muted);font-size:.8rem">— '+d.desc+'</span>':'')+'</span><span style="display:flex;gap:10px;align-items:center"><span class="ap">'+eur(d.price)+'</span><button class="btn green sm" onclick="addItem(\'plato\','+d.id+')">+</button></span></div>';
+    });
+    addHtml+='</div></details>';
+  });
+  if(addHtml.indexOf('add-row')<0)addHtml+='<div class="empty">'+(q?'Ningún plato coincide con la búsqueda.':'No hay platos ni menús. Añádelos en sus pestañas.')+'</div>';
+  cont.innerHTML=addHtml;
+}
+function addItem(tipo,ref){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  let name,price,desc='';
+  if(tipo==='menu'){const mn={semana:'Menú del Día',finde:'Menú Fin de Semana',infantil:'Menú Infantil'};name=mn[ref];price=menus[ref].price;}
+  else{const d=dishes.find(x=>x.id===ref);if(!d)return;name=d.name;price=d.price;desc=d.desc||'';}
+  // si ya existe la misma línea, sumar cantidad
+  const ex=m.items.find(it=>it.tipo===tipo&&it.ref===ref);
+  if(ex)ex.qty++;
+  else m.items.push({tipo,ref,name,price,qty:1,desc});
+  save();actualizarTicket();
+}
+function cambiaQty(idx,delta){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  m.items[idx].qty+=delta;
+  if(m.items[idx].qty<=0)m.items.splice(idx,1);
+  save();actualizarTicket();
+}
+function actualizarTicket(){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  const tb=document.getElementById('ticketBox');
+  if(!tb){renderDetalle();return;}
+  let ticket='';
+  if(!m.items.length){ticket='<div class="empty">Aún no hay nada en esta mesa.</div>';}
+  else{
+    m.items.forEach((it,idx)=>{
+      ticket+='<div class="ticket-line"><span style="flex:1">'+it.name+(descItem(it)?'<br><span style="color:var(--muted);font-size:.78rem">'+descItem(it)+'</span>':'')+'</span>'+
+        '<span style="display:flex;align-items:center;gap:6px">'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',-1)">−</button>'+
+        '<b style="min-width:20px;text-align:center">'+it.qty+'</b>'+
+        '<button class="qty-btn" onclick="cambiaQty('+idx+',1)">+</button>'+
+        '<span class="ap" style="min-width:70px;text-align:right">'+eur(it.price*it.qty)+'</span>'+
+        '</span></div>';
+    });
+  }
+  tb.innerHTML=ticket;
+  const numEl=document.querySelector('#mesaDetalle .total-box .num');
+  if(numEl)numEl.textContent=eur(mesaTotal(m));
+}
+function cerrarMesa(){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  if(!confirm('¿Cobrar y cerrar la mesa "'+m.nombre+'"? Se eliminará de las mesas abiertas.'))return;
+  const ahora=new Date();
+  historial.push({
+    id:Date.now(),
+    nombre:m.nombre,
+    total:mesaTotal(m),
+    fecha:ahora.toISOString().slice(0,10), // AAAA-MM-DD
+    hora:ahora.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})
+  });
+  mesas=mesas.filter(x=>x.id!==mesaActivaId);save();
+  toast('Mesa cobrada ✔');renderMesas();
+}
+function mesaPDF(){
+  const m=mesas.find(x=>x.id===mesaActivaId);if(!m)return;
+  if(!m.items.length){toast('La mesa está vacía');return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({format:[80,200+m.items.length*16],unit:'mm'});
+  let y=8;const W=80;
+  const hLogo=pintarLogo(doc,W/2,y,50);
+  if(hLogo){y+=hLogo+3;}
+  if(rest.name){doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text(rest.name,W/2,y,{align:'center'});y+=5;}
+  if(rest.phone){doc.setFontSize(8);doc.setFont(undefined,'normal');doc.text('Tel: '+rest.phone,W/2,y,{align:'center'});y+=5;}
+  doc.setFontSize(9);doc.text(new Date().toLocaleString('es-ES'),W/2,y,{align:'center'});y+=5;
+  doc.setFontSize(10);doc.setFont(undefined,'bold');doc.text(m.nombre,W/2,y,{align:'center'});y+=4;
+  doc.setLineDashPattern([1,1],0);doc.line(6,y,W-6,y);y+=6;
+  doc.setFont(undefined,'normal');doc.setFontSize(9);
+  m.items.forEach(it=>{
+    doc.text((it.qty+'x '+it.name).substring(0,32),6,y);
+    doc.text(eur(it.price*it.qty),W-6,y,{align:'right'});
+    y+=5;
+    const de=descItem(it);
+    if(de){
+      doc.setFontSize(7);doc.setTextColor(120,120,120);
+      const ls=doc.splitTextToSize(de,W-16);
+      ls.forEach(ln=>{doc.text(ln,9,y);y+=3.5;});
+      doc.setFontSize(9);doc.setTextColor(0,0,0);
+      y+=1;
+    }
+  });
+  y+=2;doc.setLineDashPattern([1,1],0);doc.line(6,y,W-6,y);y+=7;
+  doc.setFontSize(13);doc.setFont(undefined,'bold');
+  doc.text('TOTAL',6,y);doc.text(eur(mesaTotal(m)),W-6,y,{align:'right'});y+=8;
+  doc.setFontSize(9);doc.setFont(undefined,'normal');doc.text('¡Gracias por su visita!',W/2,y,{align:'center'});
+  doc.save('ticket-'+m.nombre.replace(/\s+/g,'_')+'.pdf');
+  toast('Ticket generado ✔');
+}
+
+// --- Historial de caja ---
+function fechaLarga(f){
+  const [a,m,d]=f.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return d+' de '+meses[parseInt(m)-1]+' de '+a;
+}
+// Devuelve {año, semana ISO} de una fecha AAAA-MM-DD
+function semanaDe(f){
+  const d=new Date(f+'T00:00:00');
+  const t=new Date(d);
+  t.setDate(t.getDate()+3-((d.getDay()+6)%7)); // jueves de esa semana
+  const week1=new Date(t.getFullYear(),0,4);
+  const sem=1+Math.round(((t-week1)/86400000-3+((week1.getDay()+6)%7))/7);
+  return {anio:t.getFullYear(),sem};
+}
+function rangoSemana(f){
+  const d=new Date(f+'T00:00:00');
+  const lunes=new Date(d);lunes.setDate(d.getDate()-((d.getDay()+6)%7));
+  const domingo=new Date(lunes);domingo.setDate(lunes.getDate()+6);
+  const fmt=x=>x.getDate()+' '+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][x.getMonth()];
+  return fmt(lunes)+' - '+fmt(domingo)+' '+domingo.getFullYear();
+}
+function nombreMes(f){
+  const [a,m]=f.split('-');
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return meses[parseInt(m)-1]+' '+a;
+}
+
+function renderHistorial(){
+  const c=document.getElementById('histContent');
+  if(!historial.length){c.innerHTML='<div class="empty">Aún no hay mesas cerradas. El historial se irá llenando a medida que cobres mesas.</div>';return;}
+  const vista=document.getElementById('histVista').value;
+  if(vista==='dias')return renderHistDias(c);
+  if(vista==='semanas')return renderHistAgrupado(c,'semana');
+  if(vista==='meses')return renderHistAgrupado(c,'mes');
+}
+function renderHistDias(c){
+  const porDia={};
+  historial.forEach(h=>{(porDia[h.fecha]=porDia[h.fecha]||[]).push(h);});
+  const dias=Object.keys(porDia).sort().reverse();
+  let html='';
+  dias.forEach(f=>{
+    const filas=porDia[f];
+    const totalDia=filas.reduce((s,h)=>s+h.total,0);
+    html+='<div class="secblock"><h3 style="display:flex;justify-content:space-between;align-items:center">'+
+      '<span>'+fechaLarga(f)+'</span>'+
+      '<span style="display:flex;gap:8px;align-items:center"><button class="btn green sm noprint" onclick="cierrePDF(\''+f+'\')">📄 Cierre</button>'+
+      '<button class="btn danger sm noprint" onclick="borrarDia(\''+f+'\')">✕</button></span></h3>'+
+      '<table><tbody>';
+    filas.forEach(h=>{
+      html+='<tr><td>'+h.nombre+'</td><td style="color:var(--muted);font-size:.85rem">'+h.hora+'</td><td class="price">'+eur(h.total)+'</td></tr>';
+    });
+    html+='</tbody></table>'+
+      '<div class="total-box" style="margin-top:8px"><div style="color:var(--muted);font-size:.8rem">TOTAL DEL DÍA · '+filas.length+' mesa'+(filas.length===1?'':'s')+'</div><div class="num">'+eur(totalDia)+'</div></div></div>';
+  });
+  c.innerHTML=html;
+}
+function renderHistAgrupado(c,tipo){
+  // Agrupar por clave (semana o mes), guardando etiqueta y orden
+  const grupos={};
+  historial.forEach(h=>{
+    let clave,etiqueta;
+    if(tipo==='semana'){const {anio,sem}=semanaDe(h.fecha);clave=anio+'-W'+('0'+sem).slice(-2);etiqueta='Semana del '+rangoSemana(h.fecha);}
+    else{clave=h.fecha.slice(0,7);etiqueta=nombreMes(h.fecha);}
+    if(!grupos[clave])grupos[clave]={etiqueta,total:0,mesas:0};
+    grupos[clave].total+=h.total;grupos[clave].mesas++;
+  });
+  const claves=Object.keys(grupos).sort().reverse();
+  let html='';
+  claves.forEach(k=>{
+    const g=grupos[k];
+    html+='<div class="secblock"><h3>'+g.etiqueta.charAt(0).toUpperCase()+g.etiqueta.slice(1)+'</h3>'+
+      '<div class="total-box"><div style="color:var(--muted);font-size:.8rem">TOTAL · '+g.mesas+' mesa'+(g.mesas===1?'':'s')+'</div><div class="num">'+eur(g.total)+'</div></div></div>';
+  });
+  c.innerHTML=html;
+}
+function borrarDia(f){
+  if(!confirm('¿Borrar del historial todas las mesas del '+fechaLarga(f)+'? Esto no se puede deshacer.'))return;
+  historial=historial.filter(h=>h.fecha!==f);save();renderHistorial();toast('Día borrado');
+}
+function borrarTodoHistorial(){
+  if(!historial.length){toast('El historial ya está vacío');return;}
+  if(!confirm('¿Borrar TODO el historial de servicios ('+historial.length+' mesas)? Esto no se puede deshacer.'))return;
+  if(!confirm('¿Seguro? Se perderá todo el historial de caja.'))return;
+  historial=[];save();renderHistorial();toast('Historial borrado');
+}
+function borrarHistorialHasta(){
+  const f=document.getElementById('histFechaBorrar').value;
+  if(!f){toast('Elige una fecha');return;}
+  const aBorrar=historial.filter(h=>h.fecha<f).length;
+  if(!aBorrar){toast('No hay nada anterior a esa fecha');return;}
+  if(!confirm('¿Borrar las '+aBorrar+' mesas anteriores al '+fechaLarga(f)+'? Esto no se puede deshacer.'))return;
+  historial=historial.filter(h=>h.fecha>=f);save();renderHistorial();toast('Historial antiguo borrado');
+}
+function cierrePDF(f){
+  const filas=historial.filter(h=>h.fecha===f);
+  if(!filas.length)return;
+  const totalDia=filas.reduce((s,h)=>s+h.total,0);
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=16;
+  doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');
+  const hLogo=pintarLogo(doc,105,y,60);
+  if(hLogo){y+=hLogo+5;}else{y+=6;}
+  if(rest.name){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
+  doc.setFontSize(14);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Cierre de caja',105,y,{align:'center'});y+=7;
+  doc.setFontSize(11);doc.setTextColor(80,80,80);doc.text(fechaLarga(f),105,y,{align:'center'});y+=10;
+  doc.setDrawColor(200,200,200);doc.line(20,y,190,y);y+=8;
+  doc.setFontSize(11);doc.setFont(undefined,'bold');doc.setTextColor(40,40,40);
+  doc.text('Mesa',20,y);doc.text('Hora',120,y);doc.text('Importe',190,y,{align:'right'});y+=2;
+  doc.line(20,y,190,y);y+=6;
+  doc.setFont(undefined,'normal');
+  filas.forEach(h=>{
+    if(y>275){doc.addPage();y=20;}
+    doc.text(h.nombre,20,y);doc.text(h.hora,120,y);doc.text(eur(h.total),190,y,{align:'right'});y+=6;
+  });
+  y+=2;doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=9;
+  doc.setFontSize(15);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);
+  doc.text('TOTAL DEL DÍA',20,y);doc.text(eur(totalDia),190,y,{align:'right'});y+=8;
+  doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(100,100,100);
+  doc.text(filas.length+' mesa'+(filas.length===1?'':'s')+' cobrada'+(filas.length===1?'':'s'),20,y);
+  doc.save('cierre-caja-'+f+'.pdf');
+  toast('Cierre generado ✔');
+}
+
+// Cargar datos del restaurante
+document.getElementById('rName').value=rest.name;
+document.getElementById('rPhone').value=rest.phone;
+// Rellenar el desplegable de secciones en orden alfabético
+document.getElementById('pSec').innerHTML=secKeys().map(s=>'<option value="'+s+'">'+SECS[s]+'</option>').join('');
+renderDB();renderMesas();
+</script>
+</body>
+</html>
