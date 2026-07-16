@@ -611,14 +611,15 @@ function cartaPDF(){
   if(hLogo){y+=hLogo+5;}else{y+=6;}
   if(rest.name){doc.setFontSize(10);doc.setFont(undefined,'normal');doc.setTextColor(120,120,120);doc.text(rest.name,105,y,{align:'center'});y+=6;}
   doc.setFontSize(13);doc.setFont(undefined,'normal');doc.setTextColor(224,123,57);doc.text('Carta',105,y,{align:'center'});y+=10;
+  function nuevaHojaCarta(){doc.addPage();doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');const hl=pintarLogo(doc,105,12,50);y=hl?12+hl+6:20;}
   secs.forEach(s=>{
-    const items=dishes.filter(d=>d.sec===s);
-    if(y>265){doc.addPage();y=20;}
+    const items=dishes.filter(d=>d.sec===s).sort((a,b)=>a.name.localeCompare(b.name,'es',{sensitivity:'base'}));
+    if(y>265){nuevaHojaCarta();}
     doc.setFontSize(13);doc.setFont(undefined,'bold');doc.setTextColor(224,123,57);doc.text(SECS[s].toUpperCase(),20,y);y+=2;
     doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=7;
     doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
     items.forEach(d=>{
-      if(y>278){doc.addPage();y=20;}
+      if(y>278){nuevaHojaCarta();}
       doc.text(d.name,22,y);
       doc.setFont(undefined,'bold');doc.text(eur(d.price),188,y,{align:'right'});doc.setFont(undefined,'normal');
       y+=6;
@@ -738,7 +739,7 @@ function menuPDF(){
   y+=8;
   if(m.note){doc.setFontSize(10);doc.setFont('times','italic');doc.setTextColor(...GRIS);doc.text(m.note,105,y,{align:'center'});y+=8;}
 
-  function nuevaPagina(){doc.addPage();fondo();y=34;}
+  function nuevaPagina(){doc.addPage();fondo();const hl=pintarLogo(doc,105,16,55);y=hl?16+hl+8:34;}
   m.groups.forEach(g=>{
     const ids=(g.items||[]).filter(id=>nameOf(id));
     if(!ids.length)return;
@@ -1127,7 +1128,7 @@ function cierrePDF(f){
   doc.line(20,y,190,y);y+=6;
   doc.setFont(undefined,'normal');
   filas.forEach(h=>{
-    if(y>275){doc.addPage();y=20;}
+    if(y>275){doc.addPage();doc.setFillColor(224,123,57);doc.rect(0,0,210,4,'F');const hl=pintarLogo(doc,105,12,50);y=hl?12+hl+6:20;}
     doc.text(h.nombre,20,y);doc.text(h.hora,120,y);doc.text(eur(h.total),190,y,{align:'right'});y+=6;
   });
   y+=2;doc.setDrawColor(224,123,57);doc.line(20,y,190,y);y+=9;
