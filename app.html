@@ -404,7 +404,7 @@ function renderDB(){
   let html='<h2>Platos guardados ('+(q?totalFiltrados+' de '+dishes.length:dishes.length)+')</h2>';
   if(q&&!totalFiltrados){c.innerHTML=html+'<div class="empty">No hay platos que coincidan con "'+q+'".</div>';return;}
   secKeys().forEach(s=>{
-    const items=dishes.filter(d=>d.sec===s&&coincide(d));
+    const items=dishes.filter(d=>d.sec===s&&coincide(d)).sort((a,b)=>a.name.localeCompare(b.name,'es',{sensitivity:'base'}));
     if(!items.length)return;
     // Abrir si: el usuario la tenía abierta, o hay una búsqueda activa con resultados
     const abrir=(abiertas.has(s)||q)?' open':'';
