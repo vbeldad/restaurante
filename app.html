@@ -620,8 +620,24 @@ function cartaPDF(){
     doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
     items.forEach(d=>{
       if(y>278){nuevaHojaCarta();}
+      const precio=eur(d.price);
+      doc.setFont(undefined,'normal');doc.setFontSize(11);doc.setTextColor(40,40,40);
       doc.text(d.name,22,y);
-      doc.setFont(undefined,'bold');doc.text(eur(d.price),188,y,{align:'right'});doc.setFont(undefined,'normal');
+      // Línea de puntos entre el nombre y el precio
+      const xNombre=22+doc.getTextWidth(d.name);
+      doc.setFont(undefined,'bold');
+      const anchoPrecio=doc.getTextWidth(precio);
+      doc.setFont(undefined,'normal');
+      const xInicioPuntos=xNombre+2;
+      const xFinPuntos=188-anchoPrecio-2;
+      if(xFinPuntos>xInicioPuntos){
+        doc.setTextColor(170,170,170);
+        const anchoPunto=doc.getTextWidth('.');
+        const n=Math.floor((xFinPuntos-xInicioPuntos)/anchoPunto);
+        if(n>0)doc.text('.'.repeat(n),xInicioPuntos,y-0.5);
+        doc.setTextColor(40,40,40);
+      }
+      doc.setFont(undefined,'bold');doc.text(precio,188,y,{align:'right'});doc.setFont(undefined,'normal');
       y+=6;
       if(d.desc){doc.setFontSize(9);doc.setTextColor(120,120,120);doc.text(d.desc,24,y);doc.setFontSize(11);doc.setTextColor(40,40,40);y+=5;}
     });
