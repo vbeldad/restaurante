@@ -1,1 +1,76 @@
-{"titulo":"Menú del Día","note":"","price":0,"foot":"","groups":[],"fecha":""}
+{
+  "titulo": "Menú del Día (Lunes a Viernes)",
+  "note": "07/08/2026",
+  "price": 14.9,
+  "foot": "",
+  "groups": [
+    {
+      "titulo": "Primeros",
+      "items": [
+        {
+          "name": "Ensalada de queso de cabra",
+          "desc": ""
+        },
+        {
+          "name": "Arroz a la Cubana con su huevo frito",
+          "desc": ""
+        },
+        {
+          "name": "Raviolis de jamon con salsa roquefort.",
+          "desc": ""
+        },
+        {
+          "name": "Tortilla francesa al gusto con ensalada cesar.",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Segundos",
+      "items": [
+        {
+          "name": "Fideua Marinera.",
+          "desc": ""
+        },
+        {
+          "name": "Salmon con hummus y verdura salteada.",
+          "desc": ""
+        },
+        {
+          "name": "Galta al horno con champiñones y patatas en salsa.",
+          "desc": ""
+        },
+        {
+          "name": "Lomo con ajo perejil patatas y huevo frito",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Postres",
+      "items": [
+        {
+          "name": "Inluido postre y bebida",
+          "desc": ""
+        },
+        {
+          "name": "Sandia.",
+          "desc": ""
+        },
+        {
+          "name": "Corte de helado.",
+          "desc": ""
+        },
+        {
+          "name": "Yogurt con miel y galleta.",
+          "desc": ""
+        },
+        {
+          "name": "Cono helado.",
+          "desc": ""
+        }
+      ]
+    }
+  ],
+  "fecha": "08/08/2026, 12:14"
+}
