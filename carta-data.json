@@ -1,18 +1,6 @@
 {
   "secciones": [
     {
-      "nombre": "Bebidas",
-      "platos": [
-        {
-          "name": "bebida y postres incluido",
-          "price": 0,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
-    },
-    {
       "nombre": "Bocadillos calientes",
       "platos": [
         {
