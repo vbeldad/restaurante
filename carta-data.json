@@ -1,1 +1,879 @@
-{"secciones":[],"fecha":""}
+{
+  "secciones": [
+    {
+      "nombre": "Bebidas",
+      "platos": [
+        {
+          "name": "bebida y postres incluido",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Bocadillos calientes",
+      "platos": [
+        {
+          "name": "Sobrasada con queso fundido",
+          "price": 5.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tortilla  con queso fundido",
+          "price": 4.8,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tortilla a la francesa",
+          "price": 4.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tortilla de atun",
+          "price": 4.9,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tortilla de Patatas",
+          "price": 5.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Bocadillos fríos",
+      "platos": [
+        {
+          "name": "Cabeza de jabali",
+          "price": 5.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Chorizo Iberico",
+          "price": 7.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Jamon Iberico",
+          "price": 7.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Salchichon Iberico",
+          "price": 7.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Bocadillos vegetales",
+      "platos": [
+        {
+          "name": "Bocadillo de Atún",
+          "price": 5.5,
+          "desc": "Atún, tomate, huevo duro y olivas",
+          "precio2": 3.8,
+          "precio2Et": "Pequeño"
+        },
+        {
+          "name": "Bocadillo de Pollo",
+          "price": 5.5,
+          "desc": "Pollo rebozado, lechuga. tomate, y mahonesa casera",
+          "precio2": 3.8,
+          "precio2Et": "pequeño"
+        }
+      ]
+    },
+    {
+      "nombre": "Carnes",
+      "platos": [
+        {
+          "name": "Chuleta de cordero",
+          "price": 15.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Chuleton",
+          "price": 22,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Entrecot",
+          "price": 16.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Entrecot",
+          "price": 17.5,
+          "desc": "con patatas gajo y queso de brie",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Cervezas",
+      "platos": [
+        {
+          "name": "Cerveza",
+          "price": 2.4,
+          "desc": "Estrella Galicia",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Cerveza",
+          "price": 2.4,
+          "desc": "Caña",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "cerveza",
+          "price": 2.4,
+          "desc": "copa",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Clara casera",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Clara de limon",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "De la brasa al plato",
+      "platos": [
+        {
+          "name": "Beico ahumado ahumado",
+          "price": 8.5,
+          "desc": "pure patatas y huevo",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Butifarra de pagés",
+          "price": 9.2,
+          "desc": "Judias Salteadas con ajo y perejil",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Butifarra de pagés",
+          "price": 9.5,
+          "desc": "patatas fritas, huevo frito, y pimiento verde",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Lomo a la Brasa",
+          "price": 8.5,
+          "desc": "con patatas fritas y huevo",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Panceta de cerdo",
+          "price": 9.5,
+          "desc": "Pure de patatas y pimiento verde",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Pincho moruno",
+          "price": 9.5,
+          "desc": "patatas fritas y alioli",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Ensaladas",
+      "platos": [
+        {
+          "name": "Ensalada cesar",
+          "price": 9.5,
+          "desc": "Pollo rebozado o pollo a la plancha, lechuga romana, parmesano. picatostes y salsa cesar",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Ensalada de Salmon",
+          "price": 10.5,
+          "desc": "salmon a la plancha, mezclun, aguacate, tomate cherirry y salsa vinagreta de limon, miel y mostaza",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Ensalada la Cabra",
+          "price": 9.5,
+          "desc": "queso de cabra gratinado,mezclum, canónigos rucula, nueces y vinagreta cesar.",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Hamburguesas",
+      "platos": [
+        {
+          "name": "Hamburguesa Americana",
+          "price": 10.5,
+          "desc": "carne, lechuga, chedar, beicon, cebolla caramelizada, y huevo",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Hamburguesa Cheese Burguer",
+          "price": 9.9,
+          "desc": "carne, pepinillo y queso chedar",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Hamburguesa de pollo",
+          "price": 9.9,
+          "desc": "pollo, lechuga, tomate y mahonesa",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Hamburguesa mediterranea",
+          "price": 10.9,
+          "desc": "carne, rucula, y queso de cabra",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "suplemento a elegir",
+          "price": 1,
+          "desc": "Queso, Beicon, cebolla, o pimientos",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Infantil",
+      "platos": [
+        {
+          "name": "Franfurt",
+          "price": 6.5,
+          "desc": "con patatas fritas y huevo",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Nuggets",
+          "price": 5.8,
+          "desc": "con patatas fritas y huevo",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "pollo Rebozado",
+          "price": 6.5,
+          "desc": "Con patatas fritas",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Pescados",
+      "platos": [
+        {
+          "name": "Pescado",
+          "price": 12,
+          "desc": "Salmón con humus y teriyaki",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Pescado",
+          "price": 14.5,
+          "desc": "Bacalao Gratinado, Con alioli y patata panadera",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Pescado",
+          "price": 14.5,
+          "desc": "Bacalao a la sanfaina",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Platos de la casa",
+      "platos": [
+        {
+          "name": "Brochetas de pollo",
+          "price": 13.5,
+          "desc": "con arroz basmati y salsa teriyaki",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Cayos de la yaya",
+          "price": 9.5,
+          "desc": "con pan ilimitado",
+          "precio2": 7,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Chuleta de Cerdo",
+          "price": 14.5,
+          "desc": "Con patatas y salsa gorgonzola",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Chuletón Chimichurry",
+          "price": 23.5,
+          "desc": "con patatas fritas y Pimientos del padron",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Macarrones a la boloñesa",
+          "price": 8.9,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Patatas bravas",
+          "price": 8.5,
+          "desc": "con un huevo frito",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Sepia a la plancha",
+          "price": 12,
+          "desc": "Con ajo y perejil, ensalada verde y patatas fritas",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tortilla de patatas",
+          "price": 8.5,
+          "desc": "Con Escalivada y pan con tomate",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Postres",
+      "platos": [
+        {
+          "name": "Cono helado.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Corneto de Nata.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Corte de helado 3 sabores.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Corte de helado.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Fruta",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Helado",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Inluido postre y bebida",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Melon o Sandia.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Sandia.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Yogurt con miel y galleta.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Yogurt con miel y nueces.",
+          "price": 0,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Refrescos",
+      "platos": [
+        {
+          "name": "Agua Mineral",
+          "price": 2,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Aquarius de limon o naranja",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Bitter Kas",
+          "price": 2.2,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Cocacola",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Cocacola zero",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Fanta de limon",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Fanta de naranja",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Fuze tea Limon",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Red bull",
+          "price": 2.9,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Tónica",
+          "price": 2.2,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Vichy",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Sidras",
+      "platos": [
+        {
+          "name": "Galipette Brut",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Galipette sin",
+          "price": 3.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Tablas Ibéricas",
+      "platos": [
+        {
+          "name": "Chorizo, Salchichon y Lomo",
+          "price": 13.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Jamon Iberico",
+          "price": 15.5,
+          "desc": "pan con tomate",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Surtido de quesos",
+          "price": 12.5,
+          "desc": "curado,  semicurado, de cabra,  y acompañado de menbrillo y frutos secos",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Tapas",
+      "platos": [
+        {
+          "name": "Albondigas caseras",
+          "price": 9.5,
+          "desc": "con tomate",
+          "precio2": 7,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Alitas de pollo",
+          "price": 7.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Calamares a la andaluza",
+          "price": 8.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Calamares a la romana",
+          "price": 8.5,
+          "desc": "",
+          "precio2": 6.5,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Callos de la yaya",
+          "price": 9.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Carne en salsa",
+          "price": 10.5,
+          "desc": "con patatas paja",
+          "precio2": 8,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Chipirones fritos",
+          "price": 9.5,
+          "desc": "",
+          "precio2": 7,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Chocos rebozados",
+          "price": 9.5,
+          "desc": "",
+          "precio2": 7,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Cochinillo",
+          "price": 10.5,
+          "desc": "",
+          "precio2": 8,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Croquetas",
+          "price": 6.5,
+          "desc": "cocido,  Jamon Iberico ,    Rabo de toro , ( 4und. )",
+          "precio2": 1.75,
+          "precio2Et": "precio por unidad adicional"
+        },
+        {
+          "name": "Ensaladilla Rusa",
+          "price": 7.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Gambas a la plancha",
+          "price": 14.5,
+          "desc": "Al brandy con ajo y perejil",
+          "precio2": 11,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Gambas Rebozadas",
+          "price": 7.9,
+          "desc": "con mahonesa de chipotle",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Huevos rotos",
+          "price": 10.5,
+          "desc": "con jamon iberico",
+          "precio2": 8,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Morros fritos",
+          "price": 7.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Patatas Bravas",
+          "price": 4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Patitas de calamar",
+          "price": 7.9,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Pimientos del padrón",
+          "price": 4.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Pinchos de la casa",
+          "price": 9.5,
+          "desc": "",
+          "precio2": 7,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Pollo Kentuky",
+          "price": 8.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Sepia a la plancha",
+          "price": 10.5,
+          "desc": "con ajo y perejil",
+          "precio2": 8,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Tallarinas",
+          "price": 12.9,
+          "desc": "con ajo y perejil",
+          "precio2": 10,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Torreznos",
+          "price": 7.5,
+          "desc": "",
+          "precio2": 6,
+          "precio2Et": "Media Racion"
+        },
+        {
+          "name": "Tortilla de patatas",
+          "price": 6.5,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
+      "nombre": "Vinos",
+      "platos": [
+        {
+          "name": "Bocchoris, ( D.O. Cava macabeu, Xael-lo, y parellada )",
+          "price": 3.5,
+          "desc": "Copa de vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Bocchoris, ( D.O. Cava macabeu, Xael-lo, y parellada )",
+          "price": 13,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Camino, ( D.O. Ribera de duero tinto fino )",
+          "price": 4,
+          "desc": "Copa de vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Camino, ( D.O. Ribera de duero tinto fino )",
+          "price": 15,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Castillo de Monjardin, ( D.O. Navarra Garnacha )",
+          "price": 3.5,
+          "desc": "Copa de vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Castillo de Monjardin, ( D.O. Navarra Garnacha )",
+          "price": 13,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "D.O.Ca. Rioja tempranillo",
+          "price": 3.5,
+          "desc": "Copa de Vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "D.O.Ca. Rioja tempranillo",
+          "price": 13,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Descomunal, ( D.O. Rueda  Verdejo )",
+          "price": 3.5,
+          "desc": "Copa de Vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Descomunal, ( D.O. Rueda Verdejo )",
+          "price": 13,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Trincador, ( D.O. Rias Baixas Albariño )",
+          "price": 4,
+          "desc": "Copa de vino",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Trincador, ( D.O. Rias Baixas Albariño )",
+          "price": 15,
+          "desc": "Botella",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    }
+  ],
+  "fecha": "08/08/2026"
+}
