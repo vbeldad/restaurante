@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENVi · Menú del Día</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Times New Roman',Georgia,serif;background:#faf7f0;color:#4a3a2a;padding:18px;min-height:100vh}
+  .marco{max-width:560px;margin:0 auto;background:#faf7f0;border:3px solid #b08d57;position:relative;padding:34px 26px 40px}
+  .marco::before{content:"";position:absolute;inset:8px;border:1px solid #b08d57;pointer-events:none}
+  .logo{max-width:74%;height:auto;display:block;margin:4px auto 6px}
+  .titulo{text-align:center;font-style:italic;color:#8a6d3b;font-size:1.5rem;margin:8px 0 4px}
+  .nota{text-align:center;color:#777;font-size:.95rem;margin-bottom:6px}
+  .adorno{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 20px}
+  .adorno .linea{width:70px;height:1px;background:#b08d57}
+  .adorno .rombo{width:9px;height:9px;background:#b08d57;transform:rotate(45deg)}
+  .apartado{margin-bottom:18px}
+  .apartado h2{text-align:center;color:#b08d57;font-size:1.15rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .apartado .sep{width:60px;height:1px;background:#b08d57;margin:0 auto 10px}
+  .plato{text-align:center;margin:6px 0}
+  .plato .nom{font-weight:bold;font-size:1.05rem;color:#4a3a2a}
+  .plato .desc{display:block;font-size:.85rem;color:#888;font-style:italic}
+  .precio{text-align:center;font-size:1.4rem;font-weight:bold;margin:22px 0 6px;color:#4a3a2a}
+  .foot{text-align:center;color:#8a6d3b;font-weight:bold;margin-top:14px}
+  .aler{text-align:center;font-size:.78rem;color:#999;font-style:italic;margin-top:18px;border-top:1px solid #e4dbca;padding-top:12px}
+  .vacio{text-align:center;color:#999;padding:40px 0;font-style:italic}
+  .actualizado{text-align:center;font-size:.72rem;color:#bbb;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="marco">
+    <img src="logo.png.png" alt="ENVi" class="logo">
+    <div id="contenido"><div class="vacio">Cargando menú…</div></div>
+  </div>
+<script>
+const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, comunícalo a nuestro personal.';
+function eur(n){return Number(n||0).toFixed(2).replace('.',',')+' €';}
+function render(m){
+  const c=document.getElementById('contenido');
+  if(!m||!m.groups||!m.groups.some(g=>g.items&&g.items.length)){
+    c.innerHTML='<div class="vacio">El menú del día aún no está publicado.</div>';return;
+  }
+  let h='<div class="titulo">'+(m.titulo||'Menú del Día')+'</div>';
+  if(m.note)h+='<div class="nota">'+m.note+'</div>';
+  h+='<div class="adorno"><span class="linea"></span><span class="rombo"></span><span class="linea"></span></div>';
+  m.groups.forEach(g=>{
+    if(!g.items||!g.items.length)return;
+    h+='<div class="apartado"><h2>'+g.titulo+'</h2><div class="sep"></div>';
+    g.items.forEach(it=>{
+      h+='<div class="plato"><span class="nom">'+it.name+'</span>'+(it.desc?'<span class="desc">'+it.desc+'</span>':'')+'</div>';
+    });
+    h+='</div>';
+  });
+  if(m.price)h+='<div class="precio">'+eur(m.price)+'</div>';
+  if(m.foot)h+='<div class="foot">'+m.foot+'</div>';
+  h+='<div class="aler">'+MSG_ALERGIAS+'</div>';
+  if(m.fecha)h+='<div class="actualizado">Actualizado: '+m.fecha+'</div>';
+  c.innerHTML=h;
+}
+// Cargar el menú publicado (menu-data.json), evitando caché
+fetch('menu-data.json?nc='+Date.now())
+  .then(r=>r.ok?r.json():null)
+  .then(render)
+  .catch(()=>render(null));
+</script>
+</body>
+</html>
