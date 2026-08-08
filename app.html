@@ -267,6 +267,8 @@
     <div class="mt">
       <button class="btn green sm" onclick="cartaPDF()">📄 Descargar PDF</button>
       <button class="btn gray sm" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn sm" style="background:#8a6d3b" onclick="publicarCartaQR()">📲 Publicar carta</button>
+      <button class="btn sm" style="background:#5a4a3a" onclick="mostrarQRCarta()">🔳 Ver QR carta</button>
     </div>
   </div>
   <div class="card">
@@ -772,6 +774,65 @@ function descargarQR(){
   if(img.tagName==='CANVAS')dataUrl=img.toDataURL('image/png');
   else dataUrl=img.src;
   const a=document.createElement('a');a.href=dataUrl;a.download='qr-menu-envi.png';a.click();
+}
+
+// --- Publicar la carta para el QR ---
+function construirCartaPublicable(){
+  const secs=secKeys().filter(s=>cartaSel&&cartaSel.has(s)&&dishes.some(d=>d.sec===s));
+  if(!secs.length)return null;
+  const secciones=secs.map(s=>({
+    nombre:SECS[s],
+    platos:dishes.filter(d=>d.sec===s).sort((a,b)=>a.name.localeCompare(b.name,'es',{sensitivity:'base'}))
+      .map(d=>({name:d.name,price:d.price,desc:d.desc||'',precio2:(d.precio2!=null?d.precio2:''),precio2Et:d.precio2Et||''}))
+  }));
+  const hoy=new Date();
+  return {secciones,fecha:hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'})};
+}
+async function publicarCartaQR(){
+  const datos=construirCartaPublicable();
+  if(!datos){toast('Selecciona al menos una sección con platos',true);return;}
+  let token=localStorage.getItem('gh_token');
+  if(!token){
+    token=prompt('Para publicar la carta (solo la primera vez) pega aquí tu token de GitHub.\n\nSe guardará en este dispositivo.\n\n(Créalo en github.com/settings/tokens con permiso "repo")');
+    if(!token)return;token=token.trim();localStorage.setItem('gh_token',token);
+  }
+  toast('Publicando carta…');
+  const repo='vbeldad/restaurante', path='carta-data.json';
+  const contenido=btoa(unescape(encodeURIComponent(JSON.stringify(datos,null,2))));
+  try{
+    let sha=null;
+    const g=await fetch('https://api.github.com/repos/'+repo+'/contents/'+path,{headers:{Authorization:'token '+token}});
+    if(g.ok){const j=await g.json();sha=j.sha;}
+    const body={message:'Actualizar carta',content:contenido};if(sha)body.sha=sha;
+    const r=await fetch('https://api.github.com/repos/'+repo+'/contents/'+path,{
+      method:'PUT',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){toast('✅ Carta publicada. Ya se ve al escanear el QR.');}
+    else if(r.status===401){localStorage.removeItem('gh_token');toast('Token no válido. Pulsa Publicar de nuevo.',true);}
+    else{const e=await r.json();toast('Error: '+(e.message||r.status),true);}
+  }catch(err){toast('Error de conexión al publicar',true);}
+}
+function mostrarQRCarta(){
+  const url='https://vbeldad.github.io/restaurante/carta.html';
+  let cont=document.getElementById('qrModal');if(cont)cont.remove();
+  cont=document.createElement('div');cont.id='qrModal';
+  cont.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  cont.innerHTML='<div style="background:#fff;border-radius:14px;padding:26px;text-align:center;max-width:340px">'+
+    '<h3 style="color:#4a3a2a;margin-bottom:6px;font-family:sans-serif">Carta · QR</h3>'+
+    '<p style="color:#888;font-size:.82rem;margin-bottom:16px;font-family:sans-serif">Los clientes lo escanean y ven la carta. Imprímelo para las mesas.</p>'+
+    '<div id="qrBox" style="display:flex;justify-content:center;padding:10px;background:#fff"></div>'+
+    '<p style="color:#aaa;font-size:.7rem;margin-top:10px;word-break:break-all;font-family:sans-serif">'+url+'</p>'+
+    '<div style="margin-top:16px;display:flex;gap:8px;justify-content:center">'+
+    '<button onclick="descargarQRCarta()" style="background:#8a6d3b;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-family:sans-serif">⬇️ Descargar</button>'+
+    '<button onclick="document.getElementById(\'qrModal\').remove()" style="background:#ccc;color:#333;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-family:sans-serif">Cerrar</button>'+
+    '</div></div>';
+  document.body.appendChild(cont);
+  new QRCode(document.getElementById('qrBox'),{text:url,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+}
+function descargarQRCarta(){
+  const img=document.querySelector('#qrBox img')||document.querySelector('#qrBox canvas');
+  if(!img){toast('Espera a que se genere el QR');return;}
+  const dataUrl=img.tagName==='CANVAS'?img.toDataURL('image/png'):img.src;
+  const a=document.createElement('a');a.href=dataUrl;a.download='qr-carta-envi.png';a.click();
 }
 
 function copyMenu(){
