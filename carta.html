@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENVi · Carta</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Times New Roman',Georgia,serif;background:#faf7f0;color:#4a3a2a;padding:18px;min-height:100vh}
+  .marco{max-width:580px;margin:0 auto;background:#faf7f0;border:3px solid #b08d57;position:relative;padding:34px 24px 40px}
+  .marco::before{content:"";position:absolute;inset:8px;border:1px solid #b08d57;pointer-events:none}
+  .logo{max-width:74%;height:auto;display:block;margin:4px auto 6px}
+  .titulo{text-align:center;font-style:italic;color:#8a6d3b;font-size:1.5rem;margin:8px 0 4px}
+  .adorno{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 22px}
+  .adorno .linea{width:70px;height:1px;background:#b08d57}
+  .adorno .rombo{width:9px;height:9px;background:#b08d57;transform:rotate(45deg)}
+  .seccion{margin-bottom:24px}
+  .seccion h2{color:#b08d57;font-size:1.15rem;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #b08d57;padding-bottom:5px;margin-bottom:12px}
+  .plato{margin:10px 0}
+  .plato-linea{display:flex;align-items:baseline;gap:6px}
+  .plato-nom{font-weight:bold;font-size:1.05rem;color:#4a3a2a;white-space:nowrap}
+  .plato-puntos{flex:1;border-bottom:1px dotted #b8a888;transform:translateY(-4px)}
+  .plato-precio{font-weight:bold;color:#4a3a2a;white-space:nowrap}
+  .plato-desc{font-size:.85rem;color:#888;font-style:italic;margin-top:2px}
+  .plato-precio2{font-size:.85rem;color:#8a6d3b;font-style:italic;text-align:right;margin-top:2px}
+  .aler{text-align:center;font-size:.78rem;color:#999;font-style:italic;margin-top:20px;border-top:1px solid #e4dbca;padding-top:12px}
+  .vacio{text-align:center;color:#999;padding:40px 0;font-style:italic}
+  .actualizado{text-align:center;font-size:.72rem;color:#bbb;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="marco">
+    <img src="logo.png.png" alt="ENVi" class="logo">
+    <div class="titulo">Carta</div>
+    <div class="adorno"><span class="linea"></span><span class="rombo"></span><span class="linea"></span></div>
+    <div id="contenido"><div class="vacio">Cargando carta…</div></div>
+  </div>
+<script>
+const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, comunícalo a nuestro personal.';
+function eur(n){return Number(n||0).toFixed(2).replace('.',',')+' €';}
+function render(data){
+  const c=document.getElementById('contenido');
+  if(!data||!data.secciones||!data.secciones.length){
+    c.innerHTML='<div class="vacio">La carta aún no está publicada.</div>';return;
+  }
+  let h='';
+  data.secciones.forEach(sec=>{
+    if(!sec.platos||!sec.platos.length)return;
+    h+='<div class="seccion"><h2>'+sec.nombre+'</h2>';
+    sec.platos.forEach(p=>{
+      h+='<div class="plato"><div class="plato-linea"><span class="plato-nom">'+p.name+'</span>'+
+         '<span class="plato-puntos"></span><span class="plato-precio">'+eur(p.price)+'</span></div>';
+      if(p.desc)h+='<div class="plato-desc">'+p.desc+'</div>';
+      if(p.precio2!=null&&p.precio2!=='')h+='<div class="plato-precio2">'+(p.precio2Et||'2º')+': '+eur(p.precio2)+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="aler">'+MSG_ALERGIAS+'</div>';
+  if(data.fecha)h+='<div class="actualizado">Actualizado: '+data.fecha+'</div>';
+  c.innerHTML=h;
+}
+fetch('carta-data.json?nc='+Date.now())
+  .then(r=>r.ok?r.json():null)
+  .then(render)
+  .catch(()=>render(null));
+</script>
+</body>
+</html>
