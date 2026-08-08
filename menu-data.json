@@ -1,26 +1,26 @@
 {
-  "titulo": "Menú del Día (Lunes a Viernes)",
-  "note": "07/08/2026",
-  "price": 14.9,
+  "titulo": "Menú de Fin de Semana",
+  "note": "",
+  "price": 21.9,
   "foot": "",
   "groups": [
     {
       "titulo": "Primeros",
       "items": [
         {
-          "name": "Ensalada de queso de cabra",
+          "name": "-Ensalada De la casa con huevo duro y entremeses.",
           "desc": ""
         },
         {
-          "name": "Arroz a la Cubana con su huevo frito",
+          "name": "Melon con jamon.",
           "desc": ""
         },
         {
-          "name": "Raviolis de jamon con salsa roquefort.",
+          "name": "Almejas a la marinera",
           "desc": ""
         },
         {
-          "name": "Tortilla francesa al gusto con ensalada cesar.",
+          "name": "Fideua Marinera.",
           "desc": ""
         }
       ]
@@ -29,19 +29,23 @@
       "titulo": "Segundos",
       "items": [
         {
-          "name": "Fideua Marinera.",
+          "name": "Pescado + 2 euros",
+          "desc": "Dorada frita con calabacin"
+        },
+        {
+          "name": "Salmon a la plancha con pure de patata.",
           "desc": ""
         },
         {
-          "name": "Salmon con hummus y verdura salteada.",
+          "name": "Costilla barbacoa con guarnicion.",
           "desc": ""
         },
         {
-          "name": "Galta al horno con champiñones y patatas en salsa.",
+          "name": "Entrecot al roquefort     + 2 Euros",
           "desc": ""
         },
         {
-          "name": "Lomo con ajo perejil patatas y huevo frito",
+          "name": "Bacalao Gratinado.",
           "desc": ""
         }
       ]
@@ -50,27 +54,32 @@
       "titulo": "Postres",
       "items": [
         {
-          "name": "Inluido postre y bebida",
+          "name": "Yogurt con miel y nueces.",
           "desc": ""
         },
         {
-          "name": "Sandia.",
+          "name": "Corte de helado 3 sabores.",
           "desc": ""
         },
         {
-          "name": "Corte de helado.",
+          "name": "Corneto de Nata.",
           "desc": ""
         },
         {
-          "name": "Yogurt con miel y galleta.",
+          "name": "Melon o Sandia.",
           "desc": ""
-        },
+        }
+      ]
+    },
+    {
+      "titulo": "Bebida",
+      "items": [
         {
-          "name": "Cono helado.",
+          "name": "bebida y postres incluido",
           "desc": ""
         }
       ]
     }
   ],
-  "fecha": "08/08/2026, 12:14"
+  "fecha": "08/08/2026, 12:47"
 }
