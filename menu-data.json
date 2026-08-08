@@ -1,7 +1,7 @@
 {
-  "titulo": "Menú de Fin de Semana",
-  "note": "",
-  "price": 21.9,
+  "titulo": "Menú del Día (Lunes a Viernes)",
+  "note": "07/08/2026",
+  "price": 14.9,
   "foot": "",
   "groups": [
     {
@@ -30,23 +30,7 @@
       "items": [
         {
           "name": "Pescado + 2 euros",
-          "desc": "Dorada frita con calabacin"
-        },
-        {
-          "name": "Salmon a la plancha con pure de patata.",
-          "desc": ""
-        },
-        {
-          "name": "Costilla barbacoa con guarnicion.",
-          "desc": ""
-        },
-        {
-          "name": "Entrecot al roquefort     + 2 Euros",
-          "desc": ""
-        },
-        {
-          "name": "Bacalao Gratinado.",
-          "desc": ""
+          "desc": "Bacalao gratinado"
         }
       ]
     },
@@ -54,32 +38,27 @@
       "titulo": "Postres",
       "items": [
         {
-          "name": "Yogurt con miel y nueces.",
+          "name": "Inluido postre y bebida",
           "desc": ""
         },
         {
-          "name": "Corte de helado 3 sabores.",
+          "name": "Sandia.",
           "desc": ""
         },
         {
-          "name": "Corneto de Nata.",
+          "name": "Corte de helado.",
           "desc": ""
         },
         {
-          "name": "Melon o Sandia.",
+          "name": "Yogurt con miel y galleta.",
           "desc": ""
-        }
-      ]
-    },
-    {
-      "titulo": "Bebida",
-      "items": [
+        },
         {
-          "name": "bebida y postres incluido",
+          "name": "Cono helado.",
           "desc": ""
         }
       ]
     }
   ],
-  "fecha": "08/08/2026, 12:47"
+  "fecha": "08/08/2026, 22:19"
 }
