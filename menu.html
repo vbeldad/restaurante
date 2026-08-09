@@ -38,6 +38,18 @@ const MSG_ALERGIAS='Si sufres alguna alergia o intolerancia alimentaria, comuní
 function eur(n){return Number(n||0).toFixed(2).replace('.',',')+' €';}
 function render(m){
   const c=document.getElementById('contenido');
+  // Modo aviso: solo logo (ya está arriba) y mensaje
+  if(m&&m.tipo==='aviso'){
+    let h='<div class="adorno"><span class="linea"></span><span class="rombo"></span><span class="linea"></span></div>';
+    if(m.mensaje){
+      h+='<div style="text-align:center;font-size:1.25rem;color:#4a3a2a;line-height:1.7;padding:20px 10px;white-space:pre-wrap">'+m.mensaje+'</div>';
+    }else{
+      h+='<div style="text-align:center;font-style:italic;color:#8a6d3b;font-size:1.2rem;padding:20px 10px">Bienvenidos</div>';
+    }
+    h+='<div class="adorno"><span class="linea"></span><span class="rombo"></span><span class="linea"></span></div>';
+    if(m.fecha)h+='<div class="actualizado">Actualizado: '+m.fecha+'</div>';
+    c.innerHTML=h;return;
+  }
   if(!m||!m.groups||!m.groups.some(g=>g.items&&g.items.length)){
     c.innerHTML='<div class="vacio">El menú del día aún no está publicado.</div>';return;
   }
