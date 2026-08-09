@@ -250,6 +250,12 @@
       <button class="btn sm" style="background:#8a6d3b" onclick="publicarMenuQR()">📲 Publicar para el QR</button>
       <button class="btn sm" style="background:#5a4a3a" onclick="mostrarQR()">🔳 Ver QR</button>
     </div>
+    <div style="background:#2a2018;border:1px solid #4a3a2a;border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-weight:bold;color:#d0a860;margin-bottom:6px">🪧 Modo aviso (fuera de horario de menú)</div>
+      <div style="color:#b0a090;font-size:.85rem;margin-bottom:10px">Publica solo el logo con un mensaje (vacaciones, horario…). Si dejas el mensaje vacío, se verá solo el logo. Al publicar el menú otra vez, el aviso desaparece.</div>
+      <input id="avisoMsg" placeholder="Ej: Cerrado por vacaciones del 1 al 15 de agosto" style="width:100%;margin-bottom:10px">
+      <button class="btn sm" style="background:#8a6d3b" onclick="publicarAvisoQR()">🪧 Publicar aviso</button>
+    </div>
     <div id="menuPreview"></div>
   </div>
 </div>
@@ -710,6 +716,31 @@ function construirMenuPublicable(){
   const hoy=new Date();
   return {titulo:tit,note:m.note||'',price:m.price||0,foot:m.foot||'',groups,
     fecha:hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})};
+}
+async function publicarAvisoQR(){
+  const msg=(document.getElementById('avisoMsg').value||'').trim();
+  const hoy=new Date();
+  const datos={tipo:'aviso',mensaje:msg,
+    fecha:hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})};
+  let token=localStorage.getItem('gh_token');
+  if(!token){
+    token=prompt('Para publicar (solo la primera vez) pega aquí tu token de GitHub.\n\nSe guardará en este dispositivo.\n\n(Créalo en github.com/settings/tokens con permiso "repo")');
+    if(!token)return;token=token.trim();localStorage.setItem('gh_token',token);
+  }
+  toast('Publicando aviso…');
+  const repo='vbeldad/restaurante', path='menu-data.json';
+  const contenido=btoa(unescape(encodeURIComponent(JSON.stringify(datos,null,2))));
+  try{
+    let sha=null;
+    const g=await fetch('https://api.github.com/repos/'+repo+'/contents/'+path,{headers:{Authorization:'token '+token}});
+    if(g.ok){const j=await g.json();sha=j.sha;}
+    const body={message:'Publicar aviso',content:contenido};if(sha)body.sha=sha;
+    const r=await fetch('https://api.github.com/repos/'+repo+'/contents/'+path,{
+      method:'PUT',headers:{Authorization:'token '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){toast('✅ Aviso publicado. El QR muestra el logo'+(msg?' y tu mensaje.':'.'));}
+    else if(r.status===401){localStorage.removeItem('gh_token');toast('Token no válido. Pulsa de nuevo.',true);}
+    else{const e=await r.json();toast('Error: '+(e.message||r.status),true);}
+  }catch(err){toast('Error de conexión al publicar',true);}
 }
 async function publicarMenuQR(){
   const datos=construirMenuPublicable();
