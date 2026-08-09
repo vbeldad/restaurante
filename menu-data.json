@@ -1,5 +1,64 @@
 {
-  "tipo": "aviso",
-  "mensaje": "El horario de Verano es de 7:00 a 23:00     Cerramos  de 14:00 a 17:00",
-  "fecha": "09/08/2026, 10:19"
+  "titulo": "Menú del Día (Lunes a Viernes)",
+  "note": "07/08/2026",
+  "price": 14.9,
+  "foot": "",
+  "groups": [
+    {
+      "titulo": "Primeros",
+      "items": [
+        {
+          "name": "-Ensalada De la casa con huevo duro y entremeses.",
+          "desc": ""
+        },
+        {
+          "name": "Melon con jamon.",
+          "desc": ""
+        },
+        {
+          "name": "Almejas a la marinera",
+          "desc": ""
+        },
+        {
+          "name": "Fideua Marinera.",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Segundos",
+      "items": [
+        {
+          "name": "Pescado + 2 euros",
+          "desc": "Bacalao gratinado"
+        }
+      ]
+    },
+    {
+      "titulo": "Postres",
+      "items": [
+        {
+          "name": "Inluido postre y bebida",
+          "desc": ""
+        },
+        {
+          "name": "Sandia.",
+          "desc": ""
+        },
+        {
+          "name": "Corte de helado.",
+          "desc": ""
+        },
+        {
+          "name": "Yogurt con miel y galleta.",
+          "desc": ""
+        },
+        {
+          "name": "Cono helado.",
+          "desc": ""
+        }
+      ]
+    }
+  ],
+  "fecha": "09/08/2026, 10:21"
 }
