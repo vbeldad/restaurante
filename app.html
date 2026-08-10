@@ -253,7 +253,7 @@
     <div style="background:#2a2018;border:1px solid #4a3a2a;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-weight:bold;color:#d0a860;margin-bottom:6px">🪧 Modo aviso (fuera de horario de menú)</div>
       <div style="color:#b0a090;font-size:.85rem;margin-bottom:10px">Publica solo el logo con un mensaje (vacaciones, horario…). Si dejas el mensaje vacío, se verá solo el logo. Al publicar el menú otra vez, el aviso desaparece.</div>
-      <input id="avisoMsg" placeholder="Ej: Cerrado por vacaciones del 1 al 15 de agosto" style="width:100%;margin-bottom:10px">
+      <textarea id="avisoMsg" placeholder="Escribe aquí tu mensaje.&#10;Puedes usar varias líneas, por ejemplo:&#10;&#10;HORARIO DE VERANO&#10;Mañana: 8:00 - 14:00&#10;Tarde: 18:00 - 23:00" style="width:100%;margin-bottom:10px;min-height:110px;font-family:inherit;resize:vertical"></textarea>
       <button class="btn sm" style="background:#8a6d3b" onclick="publicarAvisoQR()">🪧 Publicar aviso</button>
       <button class="btn sm" style="background:#b08d57" onclick="cartelAvisoPDF()">🖼️ Imprimir cartel</button>
     </div>
@@ -743,12 +743,20 @@ function cartelAvisoPDF(){
   doc.line(W/2-35,y,W/2-6,y);doc.line(W/2+6,y,W/2+35,y);
   doc.setFillColor(...DOR);doc.rect(W/2-2,y-2,4,4,'F');
   // Mensaje centrado
-  y+=30;
+  y+=24;
   doc.setTextColor(...TXT);
   if(msg){
-    doc.setFontSize(26);doc.setFont(undefined,'bold');
-    const lineas=doc.splitTextToSize(msg,150);
-    lineas.forEach(l=>{doc.text(l,W/2,y,{align:'center'});y+=13;});
+    // Ajustar tamaño de letra según cuántas líneas haya, para que quepan bien
+    doc.setFont(undefined,'bold');
+    let tam=26;
+    let lineas=doc.splitTextToSize(msg,155);
+    if(lineas.length>6)tam=20;
+    if(lineas.length>10)tam=16;
+    if(lineas.length>14)tam=13;
+    doc.setFontSize(tam);
+    lineas=doc.splitTextToSize(msg,160);
+    const interlineado=tam*0.55;
+    lineas.forEach(l=>{doc.text(l,W/2,y,{align:'center'});y+=interlineado;});
   }else{
     doc.setFontSize(30);doc.setFont(undefined,'italic');
     doc.setTextColor(...DOR);
