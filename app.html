@@ -255,6 +255,7 @@
       <div style="color:#b0a090;font-size:.85rem;margin-bottom:10px">Publica solo el logo con un mensaje (vacaciones, horario…). Si dejas el mensaje vacío, se verá solo el logo. Al publicar el menú otra vez, el aviso desaparece.</div>
       <input id="avisoMsg" placeholder="Ej: Cerrado por vacaciones del 1 al 15 de agosto" style="width:100%;margin-bottom:10px">
       <button class="btn sm" style="background:#8a6d3b" onclick="publicarAvisoQR()">🪧 Publicar aviso</button>
+      <button class="btn sm" style="background:#b08d57" onclick="cartelAvisoPDF()">🖼️ Imprimir cartel</button>
     </div>
     <div id="menuPreview"></div>
   </div>
@@ -716,6 +717,49 @@ function construirMenuPublicable(){
   const hoy=new Date();
   return {titulo:tit,note:m.note||'',price:m.price||0,foot:m.foot||'',groups,
     fecha:hoy.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})};
+}
+function cartelAvisoPDF(){
+  const msg=(document.getElementById('avisoMsg').value||'').trim();
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210, H=297;
+  const DOR=[176,141,87], CREMA=[250,247,240], TXT=[74,58,42];
+  // Fondo crema
+  doc.setFillColor(...CREMA);doc.rect(0,0,W,H,'F');
+  // Marco doble dorado
+  doc.setDrawColor(...DOR);doc.setLineWidth(1.2);doc.rect(12,12,W-24,H-24);
+  doc.setLineWidth(0.4);doc.rect(16,16,W-32,H-32);
+  // Adornos en las esquinas
+  doc.setLineWidth(0.8);const e=10;
+  doc.line(16,16+e,16,16);doc.line(16,16,16+e,16);
+  doc.line(W-16-e,16,W-16,16);doc.line(W-16,16,W-16,16+e);
+  doc.line(16,H-16-e,16,H-16);doc.line(16,H-16,16+e,H-16);
+  doc.line(W-16-e,H-16,W-16,H-16);doc.line(W-16,H-16-e,W-16,H-16);
+  // Logo centrado en la parte superior
+  const hLogo=pintarLogo(doc,W/2,50,110);
+  // Adorno rombo
+  let y=50+(hLogo||30)+20;
+  doc.setDrawColor(...DOR);doc.setLineWidth(0.5);
+  doc.line(W/2-35,y,W/2-6,y);doc.line(W/2+6,y,W/2+35,y);
+  doc.setFillColor(...DOR);doc.rect(W/2-2,y-2,4,4,'F');
+  // Mensaje centrado
+  y+=30;
+  doc.setTextColor(...TXT);
+  if(msg){
+    doc.setFontSize(26);doc.setFont(undefined,'bold');
+    const lineas=doc.splitTextToSize(msg,150);
+    lineas.forEach(l=>{doc.text(l,W/2,y,{align:'center'});y+=13;});
+  }else{
+    doc.setFontSize(30);doc.setFont(undefined,'italic');
+    doc.setTextColor(...DOR);
+    doc.text('Bienvenidos',W/2,y,{align:'center'});
+  }
+  // Pie con contacto
+  doc.setFont(undefined,'normal');doc.setFontSize(13);doc.setTextColor(120,110,98);
+  doc.text('Tel. 680 904 535',W/2,H-40,{align:'center'});
+  doc.text('envi.viladecans@gmail.com',W/2,H-32,{align:'center'});
+  doc.save('cartel-aviso.pdf');
+  toast('Cartel generado ✔');
 }
 async function publicarAvisoQR(){
   const msg=(document.getElementById('avisoMsg').value||'').trim();
