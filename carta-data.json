@@ -80,15 +80,15 @@
           "name": "Bocadillo de Atún",
           "price": 5.5,
           "desc": "Atún, tomate, huevo duro y olivas",
-          "precio2": 3.8,
-          "precio2Et": "Pequeño"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Bocadillo de Pollo",
           "price": 5.5,
           "desc": "Pollo rebozado, lechuga. tomate, y mahonesa casera",
-          "precio2": 3.8,
-          "precio2Et": "pequeño"
+          "precio2": "",
+          "precio2Et": ""
         }
       ]
     },
@@ -120,46 +120,6 @@
           "name": "Entrecot",
           "price": 17.5,
           "desc": "con patatas gajo y queso de brie",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
-    },
-    {
-      "nombre": "Cervezas",
-      "platos": [
-        {
-          "name": "Cerveza",
-          "price": 2.4,
-          "desc": "Estrella Galicia",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Cerveza",
-          "price": 2.4,
-          "desc": "Caña",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "cerveza",
-          "price": 2.4,
-          "desc": "copa",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Clara casera",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Clara de limon",
-          "price": 2.4,
-          "desc": "",
           "precio2": "",
           "precio2Et": ""
         }
@@ -344,8 +304,8 @@
           "name": "Cayos de la yaya",
           "price": 9.5,
           "desc": "con pan ilimitado",
-          "precio2": 7,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Chuleta de Cerdo",
@@ -369,9 +329,9 @@
           "precio2Et": ""
         },
         {
-          "name": "Patatas bravas",
+          "name": "Patatas bravas con un huevo frito",
           "price": 8.5,
-          "desc": "con un huevo frito",
+          "desc": "",
           "precio2": "",
           "precio2Et": ""
         },
@@ -392,107 +352,6 @@
       ]
     },
     {
-      "nombre": "Refrescos",
-      "platos": [
-        {
-          "name": "Agua Mineral",
-          "price": 2,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Aquarius de limon o naranja",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Bitter Kas",
-          "price": 2.2,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Cocacola",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Cocacola zero",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Fanta de limon",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Fanta de naranja",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Fuze tea Limon",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Red bull",
-          "price": 2.9,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Tónica",
-          "price": 2.2,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Vichy",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
-    },
-    {
-      "nombre": "Sidras",
-      "platos": [
-        {
-          "name": "Galipette Brut",
-          "price": 2.4,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Galipette sin",
-          "price": 3.5,
-          "desc": "",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
-    },
-    {
       "nombre": "Tablas Ibéricas",
       "platos": [
         {
@@ -503,9 +362,9 @@
           "precio2Et": ""
         },
         {
-          "name": "Jamon Iberico",
+          "name": "Jamon Iberico y pan con tomate",
           "price": 15.5,
-          "desc": "pan con tomate",
+          "desc": "",
           "precio2": "",
           "precio2Et": ""
         },
@@ -525,29 +384,29 @@
           "name": "Albondigas caseras",
           "price": 9.5,
           "desc": "con tomate",
-          "precio2": 7,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Alitas de pollo",
           "price": 7.5,
           "desc": "",
-          "precio2": 6,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Calamares a la andaluza",
           "price": 8.5,
           "desc": "",
-          "precio2": 6,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Calamares a la romana",
           "price": 8.5,
           "desc": "",
-          "precio2": 6.5,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Callos de la yaya",
@@ -637,8 +496,8 @@
           "name": "Patitas de calamar",
           "price": 7.9,
           "desc": "",
-          "precio2": 6,
-          "precio2Et": "Media Racion"
+          "precio2": "",
+          "precio2Et": ""
         },
         {
           "name": "Pimientos del padrón",
@@ -690,96 +549,7 @@
           "precio2Et": ""
         }
       ]
-    },
-    {
-      "nombre": "Vinos",
-      "platos": [
-        {
-          "name": "Bocchoris, ( D.O. Cava macabeu, Xael-lo, y parellada )",
-          "price": 3.5,
-          "desc": "Copa de vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Bocchoris, ( D.O. Cava macabeu, Xael-lo, y parellada )",
-          "price": 13,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Camino, ( D.O. Ribera de duero tinto fino )",
-          "price": 4,
-          "desc": "Copa de vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Camino, ( D.O. Ribera de duero tinto fino )",
-          "price": 15,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Castillo de Monjardin, ( D.O. Navarra Garnacha )",
-          "price": 3.5,
-          "desc": "Copa de vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Castillo de Monjardin, ( D.O. Navarra Garnacha )",
-          "price": 13,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "D.O.Ca. Rioja tempranillo",
-          "price": 3.5,
-          "desc": "Copa de Vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "D.O.Ca. Rioja tempranillo",
-          "price": 13,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Descomunal, ( D.O. Rueda  Verdejo )",
-          "price": 3.5,
-          "desc": "Copa de Vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Descomunal, ( D.O. Rueda Verdejo )",
-          "price": 13,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Trincador, ( D.O. Rias Baixas Albariño )",
-          "price": 4,
-          "desc": "Copa de vino",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Trincador, ( D.O. Rias Baixas Albariño )",
-          "price": 15,
-          "desc": "Botella",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
     }
   ],
-  "fecha": "08/08/2026"
+  "fecha": "10/08/2026"
 }
