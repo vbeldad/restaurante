@@ -1,5 +1,77 @@
 {
-  "tipo": "aviso",
-  "mensaje": "",
-  "fecha": "11/08/2026, 08:32"
+  "titulo": "Menú del Día (Lunes a Viernes)",
+  "note": "11/08/2026   Martes",
+  "price": 14.9,
+  "foot": "",
+  "groups": [
+    {
+      "titulo": "Primeros",
+      "items": [
+        {
+          "name": "Melon con jamon.",
+          "desc": ""
+        },
+        {
+          "name": "Ensalada verde con huevo duro",
+          "desc": ""
+        },
+        {
+          "name": "Macarrones a la boloñesa",
+          "desc": ""
+        },
+        {
+          "name": "Calamares a la romana",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Segundos",
+      "items": [
+        {
+          "name": "Butifarra con Judias",
+          "desc": "Con ajo y perejil"
+        },
+        {
+          "name": "Pollo  ( muslo a la plancha )",
+          "desc": ""
+        },
+        {
+          "name": "Sepia con ensalada",
+          "desc": ""
+        },
+        {
+          "name": "Lubina frita con verduras",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Postres",
+      "items": [
+        {
+          "name": "Corte de helado.",
+          "desc": ""
+        },
+        {
+          "name": "Cornete",
+          "desc": ""
+        },
+        {
+          "name": "Melon",
+          "desc": ""
+        }
+      ]
+    },
+    {
+      "titulo": "Bebida",
+      "items": [
+        {
+          "name": "Vino, agua, cerveza  y Refrescos",
+          "desc": "Incluida una bebida por menu"
+        }
+      ]
+    }
+  ],
+  "fecha": "11/08/2026, 12:57"
 }
