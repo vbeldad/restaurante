@@ -1,6 +1,25 @@
 {
   "secciones": [
     {
+      "nombre": "Bebidas",
+      "platos": [
+        {
+          "name": "Cerveza, Refresco, Agua o Vino",
+          "price": 0,
+          "desc": "una consumicion por comensar",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Vino, agua, cerveza  y Refrescos",
+          "price": 0,
+          "desc": "Incluida una bebida por menu",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
       "nombre": "Bocadillos calientes",
       "platos": [
         {
@@ -126,6 +145,46 @@
       ]
     },
     {
+      "nombre": "Cervezas",
+      "platos": [
+        {
+          "name": "Cerveza",
+          "price": 2.4,
+          "desc": "Estrella Galicia",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Cerveza",
+          "price": 2.4,
+          "desc": "Caña",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "cerveza",
+          "price": 2.4,
+          "desc": "copa",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Clara casera",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        },
+        {
+          "name": "Clara de limon",
+          "price": 2.4,
+          "desc": "",
+          "precio2": "",
+          "precio2Et": ""
+        }
+      ]
+    },
+    {
       "nombre": "De la brasa al plato",
       "platos": [
         {
@@ -233,32 +292,6 @@
           "name": "suplemento a elegir",
           "price": 1,
           "desc": "Queso, Beicon, cebolla, o pimientos",
-          "precio2": "",
-          "precio2Et": ""
-        }
-      ]
-    },
-    {
-      "nombre": "Infantil",
-      "platos": [
-        {
-          "name": "Franfurt",
-          "price": 6.5,
-          "desc": "con patatas fritas y huevo",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "Nuggets",
-          "price": 5.8,
-          "desc": "con patatas fritas y huevo",
-          "precio2": "",
-          "precio2Et": ""
-        },
-        {
-          "name": "pollo Rebozado",
-          "price": 6.5,
-          "desc": "Con patatas fritas",
           "precio2": "",
           "precio2Et": ""
         }
@@ -741,5 +774,5 @@
       ]
     }
   ],
-  "fecha": "10/08/2026"
+  "fecha": "17/08/2026"
 }
